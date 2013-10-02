@@ -1,17 +1,21 @@
 package com.nicta.hls.uimavlab;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Invocation;
+
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.client.ClientResponse;
 
 public class VLabRestClient {
 
 	private String serverBaseUri;
 	private String apiKey;
+	private Client client;
 
 	public VLabRestClient(String serverBaseUri, String apiKey) {
 		this.serverBaseUri = serverBaseUri;
 		this.apiKey = apiKey;
+		client = ClientBuilder.newClient();
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
@@ -37,10 +41,10 @@ public class VLabRestClient {
 		return String.format("%s/item_lists/%s.json", serverBaseUri, itemListId);
 	}
 
-	private ClientRequest getRequest(String uri) {
-		ClientRequest req = new ClientRequest(uri);
-		req.header("X-API-KEY", apiKey);
-		return req;
+	private Invocation.Builder getInvocBuilder(String uri) {
+		return client.target(uri)
+				.request("application/json")
+				.header("X-API-KEY", apiKey);
 	}
 
 	public ItemList getItemList(String itemListId) throws Exception {
@@ -48,9 +52,7 @@ public class VLabRestClient {
 	}
 
 	public ItemList getItemListFromUri(String itemListUri) throws Exception {
-		ClientRequest req = getRequest(itemListUri);
-		ClientResponse<ItemList> resp = req.get(ItemList.class);
-		return resp.getEntity();
+		return getInvocBuilder(itemListUri).get(ItemList.class);
 	}
 
 	
