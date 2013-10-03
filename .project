@@ -3,6 +3,7 @@
 	<name>uimavlab</name>
 	<comment></comment>
 	<projects>
+		<project>vlabclient</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

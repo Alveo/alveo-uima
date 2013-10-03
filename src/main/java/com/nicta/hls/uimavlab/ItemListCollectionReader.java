@@ -16,9 +16,6 @@ import org.apache.uima.fit.component.CasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.util.Progress;
 
-import us.monoid.web.JSONResource;
-import us.monoid.web.Resty;
-
 /**
  * @author amack
  *
@@ -51,10 +48,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 		fetchItemList();
 	}
 
-	private void fetchItemList() throws IOException {
-		Resty r = new Resty();
-		JSONResource json = r.json(itemListUri);
-		json.get(path)
+	private void fetchItemList() {
 	}
 
 	/* (non-Javadoc)
