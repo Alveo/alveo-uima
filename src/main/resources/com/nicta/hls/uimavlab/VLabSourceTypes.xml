@@ -11,11 +11,6 @@
       <supertypeName>uima.tcas.DocumentAnnotation</supertypeName>
       <features>
         <featureDescription>
-          <name>sourceUri</name>
-          <description>URI in the HCS vLab REST API which was used to retrieve the document</description>
-          <rangeTypeName>uima.cas.String</rangeTypeName>
-        </featureDescription>
-        <featureDescription>
           <name>serverBase</name>
           <description>Base URI for the HCS vLab server REST API
 </description>
@@ -30,6 +25,11 @@
       <supertypeName>com.nicta.hls.uimavlab.types.VLabRestInstance</supertypeName>
       <features>
         <featureDescription>
+          <name>sourceUri</name>
+          <description>URI in the HCS vLab REST API which was used to retrieve the document</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
           <name>itemId</name>
           <description>ID of the item on the HCS vLab server</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
@@ -43,8 +43,8 @@
       <supertypeName>com.nicta.hls.uimavlab.types.VLabRestInstance</supertypeName>
       <features>
         <featureDescription>
-          <name>docId</name>
-          <description>ID of the document on the HCS vLab server</description>
+          <name>rawTextUrl</name>
+          <description>URL in the HCS vLab REST API which was used to retrieve the document's raw text</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
         <featureDescription>

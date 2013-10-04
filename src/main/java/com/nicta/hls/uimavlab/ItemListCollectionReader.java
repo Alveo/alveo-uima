@@ -107,7 +107,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 				view.setSofaDataString(vd.rawText(), "text/plain");
 				VLabDocSource vlds = new VLabDocSource(view.getJCas());
 				vlds.setServerBase(baseUrl);
-				vlds.setSourceUri(vd.getRawTextUrl());
+				vlds.setRawTextUrl(vd.getRawTextUrl());
 				vlds.setDocType(vd.getType());
 				vlds.addToIndexes();
 			}
