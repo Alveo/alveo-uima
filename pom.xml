@@ -31,6 +31,11 @@
 			<artifactId>vlabclient</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.uima</groupId>
+			<artifactId>uimaj-document-annotation</artifactId>
+			<version>2.4.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -51,6 +56,47 @@
 						<goals>
 							<goal>single</goal>
 						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.uima</groupId>
+				<artifactId>jcasgen-maven-plugin</artifactId>
+				<version>2.4.2</version>  <!-- change this to the latest version -->
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>  <!-- this is the only goal -->
+						<!-- runs in phase process-resources by default -->
+						<configuration>
+
+							<!-- REQUIRED -->
+							<typeSystemIncludes>
+								<!-- one or more ant-like file patterns identifying top level descriptors -->
+								<typeSystemInclude>src/main/resources/com/nicta/hls/uimavlab/VLabSourceTypes.xml</typeSystemInclude>
+							</typeSystemIncludes>
+
+							<!-- OPTIONAL -->
+							<!-- a sequence of ant-like file patterns to exclude from the above 
+								include list -->
+							<typeSystemExcludes>
+							</typeSystemExcludes>
+
+							<!-- OPTIONAL -->
+							<!-- where the generated files go -->
+							<!-- default value: ${project.build.directory}/generated-sources/jcasgen" -->
+							<outputDirectory>
+							</outputDirectory>
+
+							<!-- true or false, default = false -->
+							<!-- if true, then although the complete merged type system will be 
+								created internally, only those types whose definition is contained within 
+								this maven project will be generated. The others will be presumed to be available 
+								via other projects. -->
+							<!-- OPTIONAL -->
+							<limitToProject>false</limitToProject>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

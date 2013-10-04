@@ -1,0 +1,1 @@
+classpath*:com/nicta/hls/uimavlab/*.xml

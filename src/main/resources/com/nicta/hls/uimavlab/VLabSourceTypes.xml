@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><typeSystemDescription xmlns="http://uima.apache.org/resourceSpecifier">
+  <name>VLabSourceTypes</name>
+  <description>Type system to encode information about a vLab source document</description>
+  <version>1.0</version>
+  <vendor>com.nicta.hls</vendor>
+  <types>
+    <typeDescription>
+      <name>com.nicta.hls.uimavlab.types.VLabRestInstance</name>
+      <description>Stores information about what the REST data source was on an HCS vLab server
+</description>
+      <supertypeName>uima.tcas.DocumentAnnotation</supertypeName>
+      <features>
+        <featureDescription>
+          <name>sourceUri</name>
+          <description>URI in the HCS vLab REST API which was used to retrieve the document</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
+          <name>serverBase</name>
+          <description>Base URI for the HCS vLab server REST API
+</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+   <typeDescription>
+      <name>com.nicta.hls.uimavlab.types.VLabItemSource</name>
+      <description>Stores information about where an item was retrieved from in the HCS vLab REST API
+</description>
+      <supertypeName>com.nicta.hls.uimavlab.types.VLabRestInstance</supertypeName>
+      <features>
+        <featureDescription>
+          <name>itemId</name>
+          <description>ID of the item on the HCS vLab server</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+   <typeDescription>
+      <name>com.nicta.hls.uimavlab.types.VLabDocSource</name>
+      <description>Stores information about where an document (source of an item) was retrieved from in the HCS vLab REST API
+</description>
+      <supertypeName>com.nicta.hls.uimavlab.types.VLabRestInstance</supertypeName>
+      <features>
+        <featureDescription>
+          <name>docId</name>
+          <description>ID of the document on the HCS vLab server</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
+          <name>docType</name>
+          <description>Type of the document on the HCS vLab server</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+  </types>
+</typeSystemDescription>
