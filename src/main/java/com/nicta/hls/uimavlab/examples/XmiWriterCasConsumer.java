@@ -39,6 +39,7 @@ import org.apache.uima.examples.SourceDocumentInformation;
 import org.apache.uima.fit.component.CasConsumer_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.ResourceProcessException;
 import org.apache.uima.util.InvalidXMLException;
 import org.apache.uima.util.UriUtils;
@@ -70,8 +71,11 @@ public class XmiWriterCasConsumer extends CasConsumer_ImplBase {
 
 	private int mDocNum;
 
-	public void initialize(UimaContext context) {
+	public void initialize(UimaContext context) throws ResourceInitializationException {
+	    super.initialize(context);
 		mDocNum = 0;
+		if (!mOutputDir.exists()) 
+			mOutputDir.mkdirs();
 	}
 
 	/**
@@ -87,55 +91,26 @@ public class XmiWriterCasConsumer extends CasConsumer_ImplBase {
 	 * 
 	 * @see org.apache.uima.collection.base_cpm.CasObjectProcessor#processCas(org.apache.uima.cas.CAS)
 	 */
-	public void processCas(CAS aCAS) throws ResourceProcessException {
-		if (!mOutputDir.exists()) 
-			mOutputDir.mkdirs();
-		System.out.println("Writing cas..");
+	@Override
+	public void process(CAS aCAS) throws AnalysisEngineProcessException {
 		String modelFileName = null;
 
 		JCas jcas;
 		try {
 			jcas = aCAS.getJCas();
 		} catch (CASException e) {
-			throw new ResourceProcessException(e);
+			throw new AnalysisEngineProcessException(e);
 		}
 
-		// retreive the filename of the input file from the CAS
-		FSIterator it = jcas.getAnnotationIndex(SourceDocumentInformation.type).iterator();
-		File outFile = null;
-		if (it.hasNext()) {
-			SourceDocumentInformation fileLoc = (SourceDocumentInformation) it.next();
-			File inFile;
-			try {
-				// handle blanks in path
-				// https://issues.apache.org/jira/browse/UIMA-1748
-				// use 3 arg form of URI Constructor to properly quote any
-				// otherwise illegal chars such as blank
-				// https://issues.apache.org/jira/browse/UIMA-2097
-				URI uri = UriUtils.quote(fileLoc.getUri());
-				inFile = new File(uri);
-				String outFileName = inFile.getName();
-				if (fileLoc.getOffsetInSource() > 0) {
-					outFileName += ("_" + fileLoc.getOffsetInSource());
-				}
-				outFileName += ".xmi";
-				outFile = new File(mOutputDir, outFileName);
-				modelFileName = mOutputDir.getAbsolutePath() + "/" + inFile.getName() + ".ecore";
-			} catch (URISyntaxException e) {
-				// bad URI, use default processing below
-			}
-		}
-		if (outFile == null) {
-			outFile = new File(mOutputDir, "doc" + mDocNum++ + ".xmi"); // Jira
+		File outFile = new File(mOutputDir, "doc" + mDocNum++ + ".xmi"); // Jira
 																		// UIMA-629
-		}
 		// serialize XCAS and write to output file
 		try {
 			writeXmi(jcas.getCas(), outFile, modelFileName);
 		} catch (IOException e) {
-			throw new ResourceProcessException(e);
+			throw new AnalysisEngineProcessException(e);
 		} catch (SAXException e) {
-			throw new ResourceProcessException(e);
+			throw new AnalysisEngineProcessException(e);
 		}
 	}
 
@@ -190,9 +165,4 @@ public class XmiWriterCasConsumer extends CasConsumer_ImplBase {
 		return XmiWriterCasConsumer.class.getResource("XmiWriterCasConsumer.xml");
 	}
 
-	@Override
-	public void process(CAS aCAS) throws AnalysisEngineProcessException {
-		// TODO Auto-generated method stub
-
-	}
 }
