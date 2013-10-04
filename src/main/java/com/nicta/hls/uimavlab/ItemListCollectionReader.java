@@ -8,12 +8,14 @@ import java.util.Iterator;
 
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
+import org.apache.uima.cas.CASException;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.fit.component.CasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 
+import com.nicta.hls.uimavlab.types.VLabItemSource;
 import com.nicta.hls.vlabclient.RestClient;
 import com.nicta.hls.vlabclient.VLabDocument;
 import com.nicta.hls.vlabclient.VLabItem;
@@ -82,12 +84,20 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	 */
 	public void getNext(CAS cas) throws IOException, CollectionException {
 		++itemsFetched;
-		storeItemInCas(itemsIter.next(), cas);
+		try {
+			storeItemInCas(itemsIter.next(), cas);
+		} catch (CASException e) {
+			throw new CollectionException(e);
+		}
 	}
 
-	private void storeItemInCas(VLabItem next, CAS cas) {
+	private void storeItemInCas(VLabItem next, CAS cas) throws CASException {
 		CAS mainView = cas.createView("00: _PRIMARY_ITEM_");
 		mainView.setSofaDataString(next.primaryText(), "text/plain");
+		VLabItemSource vlis = new VLabItemSource(mainView.getJCas());
+		vlis.setSourceUri(next.getUri());
+		vlis.setServerBase(baseUrl);
+		vlis.addToIndexes();
 		int ctr = 1;
 		if (includeRawDocs) {
 			for (VLabDocument vd : next.documents()) {
