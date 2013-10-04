@@ -83,11 +83,11 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	}
 
 	private void storeItemInCas(VLabItem next, CAS cas) {
-		CAS mainView = cas.createView("_PRIMARY_ITEM_");
+		CAS mainView = cas.createView("00: _PRIMARY_ITEM_");
 		mainView.setSofaDataString(next.primaryText(), "text/plain");
 		int ctr = 1;
 		for (VLabDocument vd : next.documents()) {
-			CAS view = cas.createView(String.format("%02d_%s", ctr, vd.getType()));
+			CAS view = cas.createView(String.format("%02d: %s", ctr, vd.getType()));
 			++ctr;
 			view.setSofaDataString(vd.rawText(), "text/plain");
 		}
