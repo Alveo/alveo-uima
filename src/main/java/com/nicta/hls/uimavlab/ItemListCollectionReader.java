@@ -15,6 +15,7 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 
+import com.nicta.hls.uimavlab.types.VLabDocSource;
 import com.nicta.hls.uimavlab.types.VLabItemSource;
 import com.nicta.hls.vlabclient.RestClient;
 import com.nicta.hls.vlabclient.VLabDocument;
@@ -104,6 +105,11 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 				CAS view = cas.createView(String.format("%02d: %s", ctr, vd.getType()));
 				++ctr;
 				view.setSofaDataString(vd.rawText(), "text/plain");
+				VLabDocSource vlds = new VLabDocSource(view.getJCas());
+				vlds.setServerBase(baseUrl);
+				vlds.setSourceUri(vd.getRawTextUrl());
+				vlds.setDocType(vd.getType());
+				vlds.addToIndexes();
 			}
 		}
 	}
