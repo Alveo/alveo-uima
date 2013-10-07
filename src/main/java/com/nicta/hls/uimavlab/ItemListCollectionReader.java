@@ -12,6 +12,7 @@ import org.apache.uima.cas.CASException;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.fit.component.CasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
+import org.apache.uima.fit.descriptor.TypeCapability;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 
@@ -26,6 +27,7 @@ import com.nicta.hls.vlabclient.VLabItemList;
  * @author amack
  * 
  */
+@TypeCapability(outputs = {"com.nicta.hls.uimavlab.types.VLabItemSource", "com.nicta.hls.uimavlab.types.VLabDocSource"})
 public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 
 	public static final String PARAM_VLAB_BASE_URL = "vlabBaseUrl";
