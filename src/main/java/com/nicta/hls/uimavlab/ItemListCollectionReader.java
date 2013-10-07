@@ -136,7 +136,9 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 		metadata.setCollection(orig.get("Collection:"));
 		metadata.setWordCount(Integer.parseInt(orig.get("Word Count")));
 		metadata.setContributor(orig.get("Contributor:"));
+		metadata.setMode(orig.get("Mode:"));
 		vlis.setMetadata(metadata);
+		vlis.getCAS().setDocumentLanguage(orig.get("Language (ISO 639-3 Code):"));
 	}
 
 	/*
