@@ -5,6 +5,7 @@ package com.nicta.hls.uimavlab;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.uima.UimaContext;
@@ -14,13 +15,17 @@ import org.apache.uima.collection.CollectionException;
 import org.apache.uima.fit.component.CasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.descriptor.TypeCapability;
+import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 
+import com.nicta.hls.uimavlab.types.ItemAnnotation;
 import com.nicta.hls.uimavlab.types.ItemMetadata;
 import com.nicta.hls.uimavlab.types.VLabDocSource;
 import com.nicta.hls.uimavlab.types.VLabItemSource;
 import com.nicta.hls.vlabclient.RestClient;
+import com.nicta.hls.vlabclient.VLabAnnotation;
 import com.nicta.hls.vlabclient.VLabDocument;
 import com.nicta.hls.vlabclient.VLabItem;
 import com.nicta.hls.vlabclient.VLabItemList;
@@ -37,6 +42,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	public static final String PARAM_VLAB_ITEM_LIST_ID = "vlabItemListId";
 	public static final String PARAM_VLAB_API_KEY = "vLabApiKey";
 	public static final String PARAM_INCLUDE_RAW_DOCS = "includeRawDocs";
+	public static final String PARAM_INCLUDE_ANNOTATIONS = "includeAnnotations";
 
 	@ConfigurationParameter(name = PARAM_VLAB_ITEM_LIST_ID, mandatory = true, description = "Item ID which should be retrieved and converted into a "
 			+ "set of UIMA CAS documents")
@@ -52,6 +58,9 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 
 	@ConfigurationParameter(name = PARAM_INCLUDE_RAW_DOCS, mandatory = false, description = "Include raw document sources as separate SofAs")
 	private boolean includeRawDocs = false;
+	
+	@ConfigurationParameter(name = PARAM_INCLUDE_ANNOTATIONS, mandatory = false, description = "Include textual annotations when they are present")
+	private boolean includeAnnotations = true;
 
 	private VLabItemList itemList;
 	private Iterator<? extends VLabItem> itemsIter;
@@ -111,6 +120,22 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 		}
 	}
 
+	private void storeAnnotations(VLabItem next, VLabItemSource vlis) throws CASException {
+		List<VLabAnnotation> anns = next.getAnnotations();
+		int ctr = 0;
+		JCas jcas = vlis.getCAS().getJCas();
+		vlis.setAnnotations(new FSArray(jcas, anns.size()));
+		for (VLabAnnotation va : anns) {
+			int begin = Math.round(va.getStart());
+			int end = Math.round(va.getEnd());
+			ItemAnnotation itAn = new ItemAnnotation(jcas, begin, end);
+			itAn.setAnnType(va.getType());
+			itAn.setLabel(va.getLabel());
+			itAn.addToIndexes();
+			vlis.setAnnotations(ctr++, itAn);
+		}
+	}
+
 	private void storeSourceDoc(VLabDocument vd, CAS view) throws CASException {
 		view.setSofaDataString(vd.rawText(), "text/plain");
 		VLabDocSource vlds = new VLabDocSource(view.getJCas());
@@ -125,6 +150,8 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 		vlis.setSourceUri(next.getUri());
 		vlis.setServerBase(baseUrl);
 		storeMetadata(next, vlis);
+		if (includeAnnotations) 
+			storeAnnotations(next, vlis);
 		vlis.addToIndexes();
 	}
 

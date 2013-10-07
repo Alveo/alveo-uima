@@ -33,9 +33,15 @@
         </featureDescription>
         <featureDescription>
           <name>metadata</name>
-          <description>Metadata associated with the item
-</description>
+          <description>Metadata associated with the item</description>
           <rangeTypeName>com.nicta.hls.uimavlab.types.ItemMetadata</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
+          <name>annotations</name>
+          <description>The textual annotations associated with the document</description>
+          <rangeTypeName>uima.cas.FSArray</rangeTypeName>
+          <elementType>com.nicta.hls.uimavlab.types.ItemAnnotation</elementType>
+          <multipleReferencesAllowed>false</multipleReferencesAllowed>
         </featureDescription>
       </features>
     </typeDescription>
@@ -94,6 +100,23 @@
         <featureDescription>
           <name>identifier</name>
           <description/>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+    <typeDescription>
+      <name>com.nicta.hls.uimavlab.types.ItemAnnotation</name>
+      <description/>
+      <supertypeName>uima.tcas.Annotation</supertypeName>
+      <features>
+        <featureDescription>
+          <name>annType</name>
+          <description>The type of the annotation</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
+          <name>label</name>
+          <description>The label assigned to the annotation in the HCS vLab data</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
       </features>
