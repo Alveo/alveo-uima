@@ -24,7 +24,7 @@ public class ItemListReaderExample {
 				ItemListCollectionReader.PARAM_VLAB_BASE_URL, serverUri,
 				ItemListCollectionReader.PARAM_VLAB_API_KEY, apiKey,
 				ItemListCollectionReader.PARAM_VLAB_ITEM_LIST_ID, itemListId,
-				ItemListCollectionReader.PARAM_INCLUDE_RAW_DOCS, true);
+				ItemListCollectionReader.PARAM_INCLUDE_RAW_DOCS, false);
 		AnalysisEngineDescription casWriter = AnalysisEngineFactory.createEngineDescription(
 				XmiWriterCasConsumer.class,
 				XmiWriterCasConsumer.PARAM_OUTPUTDIR, outputDir);
