@@ -5,6 +5,7 @@ package com.nicta.hls.uimavlab;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
@@ -16,6 +17,7 @@ import org.apache.uima.fit.descriptor.TypeCapability;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 
+import com.nicta.hls.uimavlab.types.ItemMetadata;
 import com.nicta.hls.uimavlab.types.VLabDocSource;
 import com.nicta.hls.uimavlab.types.VLabItemSource;
 import com.nicta.hls.vlabclient.RestClient;
@@ -97,23 +99,44 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	private void storeItemInCas(VLabItem next, CAS cas) throws CASException {
 		CAS mainView = cas.createView("00: _PRIMARY_ITEM_");
 		mainView.setSofaDataString(next.primaryText(), "text/plain");
-		VLabItemSource vlis = new VLabItemSource(mainView.getJCas());
-		vlis.setSourceUri(next.getUri());
-		vlis.setServerBase(baseUrl);
-		vlis.addToIndexes();
+		storeMainItem(next, mainView);
 		int ctr = 1;
 		if (includeRawDocs) {
 			for (VLabDocument vd : next.documents()) {
-				CAS view = cas.createView(String.format("%02d: %s", ctr, vd.getType()));
 				++ctr;
-				view.setSofaDataString(vd.rawText(), "text/plain");
-				VLabDocSource vlds = new VLabDocSource(view.getJCas());
-				vlds.setServerBase(baseUrl);
-				vlds.setRawTextUrl(vd.getRawTextUrl());
-				vlds.setDocType(vd.getType());
-				vlds.addToIndexes();
+				CAS view = cas.createView(String.format("%02d: %s", ctr, vd.getType()));
+				storeSourceDoc(vd, view);
 			}
 		}
+	}
+
+	private void storeSourceDoc(VLabDocument vd, CAS view) throws CASException {
+		view.setSofaDataString(vd.rawText(), "text/plain");
+		VLabDocSource vlds = new VLabDocSource(view.getJCas());
+		vlds.setServerBase(baseUrl);
+		vlds.setRawTextUrl(vd.getRawTextUrl());
+		vlds.setDocType(vd.getType());
+		vlds.addToIndexes();
+	}
+
+	private void storeMainItem(VLabItem next, CAS mainView) throws CASException {
+		VLabItemSource vlis = new VLabItemSource(mainView.getJCas());
+		vlis.setSourceUri(next.getUri());
+		vlis.setServerBase(baseUrl);
+		storeMetadata(next, vlis);
+		vlis.addToIndexes();
+	}
+
+	private void storeMetadata(VLabItem next, VLabItemSource vlis) throws CASException {
+		Map<String, String> orig = next.getMetadata();
+		ItemMetadata metadata = new ItemMetadata(vlis.getCAS().getJCas());
+		System.err.println(orig);
+		metadata.setTitle("foo");
+		metadata.setTitle(orig.get("Title:"));
+		metadata.setCollection(orig.get("Collection:"));
+		metadata.setWordCount(Integer.parseInt(orig.get("Word Count")));
+		metadata.setContributor(orig.get("Contributor:"));
+		vlis.setMetadata(metadata);
 	}
 
 	/*
