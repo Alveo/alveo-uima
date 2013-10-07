@@ -29,7 +29,8 @@ import com.nicta.hls.vlabclient.VLabItemList;
  * @author amack
  * 
  */
-@TypeCapability(outputs = {"com.nicta.hls.uimavlab.types.VLabItemSource", "com.nicta.hls.uimavlab.types.VLabDocSource"})
+@TypeCapability(outputs = { "com.nicta.hls.uimavlab.types.VLabItemSource",
+		"com.nicta.hls.uimavlab.types.VLabDocSource" })
 public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 
 	public static final String PARAM_VLAB_BASE_URL = "vlabBaseUrl";
@@ -130,12 +131,12 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	private void storeMetadata(VLabItem next, VLabItemSource vlis) throws CASException {
 		Map<String, String> orig = next.getMetadata();
 		ItemMetadata metadata = new ItemMetadata(vlis.getCAS().getJCas());
-		metadata.setTitle("foo");
 		metadata.setTitle(orig.get("Title:"));
 		metadata.setCollection(orig.get("Collection:"));
 		metadata.setWordCount(Integer.parseInt(orig.get("Word Count")));
 		metadata.setContributor(orig.get("Contributor:"));
 		metadata.setMode(orig.get("Mode:"));
+		metadata.setIdentifier(orig.get("Identifier:"));
 		vlis.setMetadata(metadata);
 		vlis.getCAS().setDocumentLanguage(orig.get("Language (ISO 639-3 Code):"));
 	}
