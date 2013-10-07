@@ -130,7 +130,6 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	private void storeMetadata(VLabItem next, VLabItemSource vlis) throws CASException {
 		Map<String, String> orig = next.getMetadata();
 		ItemMetadata metadata = new ItemMetadata(vlis.getCAS().getJCas());
-		System.err.println(orig);
 		metadata.setTitle("foo");
 		metadata.setTitle(orig.get("Title:"));
 		metadata.setCollection(orig.get("Collection:"));
