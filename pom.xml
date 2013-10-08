@@ -7,8 +7,20 @@
 	<version>0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
+	<organization>
+		<name>National ICT Australia</name>
+		<url>http://nicta.com.au/</url>
+	</organization>
+	<developers>
+		<developer>
+			<name>Andrew MacKinlay</name>
+			<email>andrew.mackinlay@nicta.com.au</email>
+		</developer>
+	</developers>
+	<inceptionYear>2013</inceptionYear>
 	<name>uimavlab</name>
-	<url>http://maven.apache.org</url>
+	<description>UIMA components to read from the HCS vLab API and output in a UIMA format</description>
+	<url>http://opennicta.com/home/health/uimavlab</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -97,6 +109,27 @@
 							<!-- OPTIONAL -->
 							<limitToProject>false</limitToProject>
 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.uima</groupId>
+				<artifactId>uimafit-maven-plugin</artifactId>
+				<version>2.0.0</version> <!-- change to latest version -->
+				<configuration>
+					<!-- see http://uima.apache.org/d/uimafit-current/tools.uimafit.book.html#d5e593 
+						for config info -->
+					<componentCopyright>National ICT Australia 2013</componentCopyright>
+					<overrideComponentCopyright>true</overrideComponentCopyright>
+				</configuration>
+				<executions>
+					<execution>
+						<id>default</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>enhance</goal>
+							<goal>generate</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
