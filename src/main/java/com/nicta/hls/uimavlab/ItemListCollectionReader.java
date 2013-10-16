@@ -11,6 +11,7 @@ import java.util.Map;
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
+import org.apache.uima.cas.Type;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.fit.component.CasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
@@ -24,11 +25,11 @@ import com.nicta.hls.uimavlab.types.ItemAnnotation;
 import com.nicta.hls.uimavlab.types.ItemMetadata;
 import com.nicta.hls.uimavlab.types.VLabDocSource;
 import com.nicta.hls.uimavlab.types.VLabItemSource;
-import com.nicta.hls.vlabclient.RestClient;
-import com.nicta.hls.vlabclient.VLabAnnotation;
-import com.nicta.hls.vlabclient.VLabDocument;
-import com.nicta.hls.vlabclient.VLabItem;
-import com.nicta.hls.vlabclient.VLabItemList;
+import com.nicta.vlabclient.RestClient;
+import com.nicta.vlabclient.VLabAnnotation;
+import com.nicta.vlabclient.VLabDocument;
+import com.nicta.vlabclient.VLabItem;
+import com.nicta.vlabclient.VLabItemList;
 
 /**
  * @author amack
