@@ -1,4 +1,4 @@
-package com.nicta.hls.uimavlab.examples;
+package com.nicta.uimavlab.examples;
 
 import java.io.IOException;
 
@@ -9,7 +9,7 @@ import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
 
-import com.nicta.hls.uimavlab.ItemListCollectionReader;
+import com.nicta.uimavlab.ItemListCollectionReader;
 
 public class ItemListReaderExample {
 

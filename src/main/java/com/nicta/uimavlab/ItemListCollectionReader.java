@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.nicta.hls.uimavlab;
+package com.nicta.uimavlab;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -21,10 +21,10 @@ import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 
-import com.nicta.hls.uimavlab.types.ItemAnnotation;
-import com.nicta.hls.uimavlab.types.ItemMetadata;
-import com.nicta.hls.uimavlab.types.VLabDocSource;
-import com.nicta.hls.uimavlab.types.VLabItemSource;
+import com.nicta.uimavlab.types.ItemAnnotation;
+import com.nicta.uimavlab.types.ItemMetadata;
+import com.nicta.uimavlab.types.VLabDocSource;
+import com.nicta.uimavlab.types.VLabItemSource;
 import com.nicta.vlabclient.RestClient;
 import com.nicta.vlabclient.VLabAnnotation;
 import com.nicta.vlabclient.VLabDocument;
@@ -35,8 +35,8 @@ import com.nicta.vlabclient.VLabItemList;
  * @author amack
  * 
  */
-@TypeCapability(outputs = { "com.nicta.hls.uimavlab.types.VLabItemSource",
-		"com.nicta.hls.uimavlab.types.VLabDocSource" })
+@TypeCapability(outputs = { "com.nicta.uimavlab.types.VLabItemSource",
+		"com.nicta.uimavlab.types.VLabDocSource" })
 public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 
 	public static final String PARAM_VLAB_BASE_URL = "vlabBaseUrl";

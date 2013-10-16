@@ -1,4 +1,4 @@
-package com.nicta.hls.uimavlab.examples;
+package com.nicta.uimavlab.examples;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
