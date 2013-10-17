@@ -39,7 +39,7 @@
 			<version>2.0.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.nicta.hls</groupId>
+			<groupId>com.nicta</groupId>
 			<artifactId>vlabclient</artifactId>
 			<version>0.2-SNAPSHOT</version>
 		</dependency>
