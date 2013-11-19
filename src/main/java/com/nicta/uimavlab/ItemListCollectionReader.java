@@ -11,7 +11,6 @@ import java.util.Map;
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
-import org.apache.uima.cas.Type;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.fit.component.CasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
@@ -28,21 +27,18 @@ import com.nicta.uimavlab.types.VLabDocSource;
 import com.nicta.uimavlab.types.VLabItemSource;
 import com.nicta.vlabclient.RestClient;
 import com.nicta.vlabclient.UnknownServerAPIVersionException;
-import com.nicta.vlabclient.entity.Annotation;
-import com.nicta.vlabclient.entity.Document;
-import com.nicta.vlabclient.entity.Item;
-import com.nicta.vlabclient.entity.ItemList;
-import com.nicta.vlabclient.entity.TextAnnotation;
-import com.nicta.vlabclient.entity.TextDocument;
-import com.nicta.vlabclient.entity.UnknownValueException;
-import com.nicta.vlabclient.entity.UnsupportedLDSchemaException;
+import com.nicta.vlabclient.entity.*;
 
 /**
  * @author amack
  * 
  */
-@TypeCapability(outputs = { "com.nicta.uimavlab.types.VLabItemSource",
-		"com.nicta.uimavlab.types.VLabDocSource" })
+@TypeCapability(outputs = { 
+		"com.nicta.uimavlab.types.VLabItemSource",
+		"com.nicta.uimavlab.types.VLabDocSource",
+		"com.nicta.uimavlab.types.ItemAnnotation",
+		"com.nicta.uimavlab.types.ItemMetadata"
+})
 public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 
 	public static final String PARAM_VLAB_BASE_URL = "vlabBaseUrl";
