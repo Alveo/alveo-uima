@@ -18,6 +18,7 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.descriptor.TypeCapability;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
+import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 
@@ -26,10 +27,15 @@ import com.nicta.uimavlab.types.ItemMetadata;
 import com.nicta.uimavlab.types.VLabDocSource;
 import com.nicta.uimavlab.types.VLabItemSource;
 import com.nicta.vlabclient.RestClient;
-import com.nicta.vlabclient.VLabAnnotation;
-import com.nicta.vlabclient.VLabDocument;
-import com.nicta.vlabclient.VLabItem;
-import com.nicta.vlabclient.VLabItemList;
+import com.nicta.vlabclient.UnknownServerAPIVersionException;
+import com.nicta.vlabclient.entity.Annotation;
+import com.nicta.vlabclient.entity.Document;
+import com.nicta.vlabclient.entity.Item;
+import com.nicta.vlabclient.entity.ItemList;
+import com.nicta.vlabclient.entity.TextAnnotation;
+import com.nicta.vlabclient.entity.TextDocument;
+import com.nicta.vlabclient.entity.UnknownValueException;
+import com.nicta.vlabclient.entity.UnsupportedLDSchemaException;
 
 /**
  * @author amack
@@ -40,7 +46,7 @@ import com.nicta.vlabclient.VLabItemList;
 public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 
 	public static final String PARAM_VLAB_BASE_URL = "vlabBaseUrl";
-	public static final String PARAM_VLAB_ITEM_LIST_ID = "vlabItemListId";
+	public static final String PARAM_VLAB_ITEM_LIST_ID = "ItemListId";
 	public static final String PARAM_VLAB_API_KEY = "vLabApiKey";
 	public static final String PARAM_INCLUDE_RAW_DOCS = "includeRawDocs";
 	public static final String PARAM_INCLUDE_ANNOTATIONS = "includeAnnotations";
@@ -63,8 +69,8 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	@ConfigurationParameter(name = PARAM_INCLUDE_ANNOTATIONS, mandatory = false, description = "Include textual annotations when they are present")
 	private boolean includeAnnotations = true;
 
-	private VLabItemList itemList;
-	private Iterator<? extends VLabItem> itemsIter;
+	private ItemList itemList;
+	private Iterator<? extends Item> itemsIter;
 	private int itemsFetched;
 	private int totalItems;
 
@@ -75,11 +81,16 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 		// TODO Auto-generated constructor stub
 	}
 
-	public void initialize(UimaContext context) {
-		fetchItemList();
+	@Override
+	public void initialize(UimaContext context) throws ResourceInitializationException {
+		try {
+			fetchItemList();
+		} catch (UnknownServerAPIVersionException e) {
+			throw new ResourceInitializationException(e);
+		}
 	}
 
-	private void fetchItemList() {
+	private void fetchItemList() throws UnknownServerAPIVersionException {
 		RestClient client = new RestClient(baseUrl, apiKey);
 		try {
 			itemList = client.getItemList(itemListId);
@@ -107,46 +118,58 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 		}
 	}
 
-	private void storeItemInCas(VLabItem next, CAS cas) throws CASException {
+	private void storeItemInCas(Item next, CAS cas) throws CASException {
 		CAS mainView = cas.createView("00: _PRIMARY_ITEM_");
 		mainView.setSofaDataString(next.primaryText(), "text/plain");
 		storeMainItem(next, mainView);
 		int ctr = 1;
 		if (includeRawDocs) {
-			for (VLabDocument vd : next.documents()) {
+			for (TextDocument td : next.textDocuments()) {
 				++ctr;
-				CAS view = cas.createView(String.format("%02d: %s", ctr, vd.getType()));
-				storeSourceDoc(vd, view);
+				try {
+					String docType = td.getType();
+					CAS view = cas.createView(String.format("%02d: %s", ctr, docType));
+					storeSourceDoc(td, view);
+				} catch (UnknownValueException e) {
+					throw new CASException(e);
+				}
 			}
 		}
 	}
 
-	private void storeAnnotations(VLabItem next, VLabItemSource vlis) throws CASException {
-		List<VLabAnnotation> anns = next.getAnnotations();
+	private void storeAnnotations(Item next, VLabItemSource vlis) throws CASException {
+		List<TextAnnotation> anns;
+		try {
+			anns = next.getTextAnnotations();
+		} catch (UnsupportedLDSchemaException e) {
+			throw new CASException(e);
+		}
 		int ctr = 0;
 		JCas jcas = vlis.getCAS().getJCas();
 		vlis.setAnnotations(new FSArray(jcas, anns.size()));
-		for (VLabAnnotation va : anns) {
-			int begin = Math.round(va.getStart());
-			int end = Math.round(va.getEnd());
-			ItemAnnotation itAn = new ItemAnnotation(jcas, begin, end);
-			itAn.setAnnType(va.getType());
-			itAn.setLabel(va.getLabel());
+		for (TextAnnotation ta : anns) {
+			ItemAnnotation itAn = new ItemAnnotation(jcas, ta.getStartOffset(), ta.getEndOffset());
+			itAn.setAnnType(ta.getType());
+			itAn.setLabel(ta.getLabel());
 			itAn.addToIndexes();
 			vlis.setAnnotations(ctr++, itAn);
 		}
 	}
 
-	private void storeSourceDoc(VLabDocument vd, CAS view) throws CASException {
-		view.setSofaDataString(vd.rawText(), "text/plain");
+	private void storeSourceDoc(TextDocument td, CAS view) throws CASException {
+		view.setSofaDataString(td.rawText(), "text/plain");
 		VLabDocSource vlds = new VLabDocSource(view.getJCas());
 		vlds.setServerBase(baseUrl);
-		vlds.setRawTextUrl(vd.getRawTextUrl());
-		vlds.setDocType(vd.getType());
+		vlds.setRawTextUrl(td.getDataUrl());
+		try {
+			vlds.setDocType(td.getType());
+		} catch (UnknownValueException e) {
+			throw new CASException(e);
+		}
 		vlds.addToIndexes();
 	}
 
-	private void storeMainItem(VLabItem next, CAS mainView) throws CASException {
+	private void storeMainItem(Item next, CAS mainView) throws CASException {
 		VLabItemSource vlis = new VLabItemSource(mainView.getJCas());
 		vlis.setSourceUri(next.getUri());
 		vlis.setServerBase(baseUrl);
@@ -156,7 +179,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 		vlis.addToIndexes();
 	}
 
-	private void storeMetadata(VLabItem next, VLabItemSource vlis) throws CASException {
+	private void storeMetadata(Item next, VLabItemSource vlis) throws CASException {
 		Map<String, String> orig = next.getMetadata();
 		ItemMetadata metadata = new ItemMetadata(vlis.getCAS().getJCas());
 		metadata.setTitle(orig.get("Title"));

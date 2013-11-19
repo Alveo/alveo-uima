@@ -41,7 +41,7 @@
 		<dependency>
 			<groupId>com.nicta</groupId>
 			<artifactId>vlabclient</artifactId>
-			<version>0.2-SNAPSHOT</version>
+			<version>0.4.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.uima</groupId>
