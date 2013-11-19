@@ -41,7 +41,7 @@ import com.nicta.vlabclient.entity.*;
 })
 public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 
-	public static final String PARAM_VLAB_BASE_URL = "vlabBaseUrl";
+	public static final String PARAM_VLAB_BASE_URL = "vLabBaseUrl";
 	public static final String PARAM_VLAB_ITEM_LIST_ID = "ItemListId";
 	public static final String PARAM_VLAB_API_KEY = "vLabApiKey";
 	public static final String PARAM_INCLUDE_RAW_DOCS = "includeRawDocs";
