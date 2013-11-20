@@ -20,14 +20,29 @@ import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nicta.uimavlab.types.ItemAnnotation;
 import com.nicta.uimavlab.types.ItemMetadata;
+import com.nicta.uimavlab.types.UnknownItemAnnotation;
 import com.nicta.uimavlab.types.VLabDocSource;
 import com.nicta.uimavlab.types.VLabItemSource;
+import com.nicta.uimavlab.types.itemanns.DubiousNonsenseAnnotation;
+import com.nicta.uimavlab.types.itemanns.ElongationAnnotation;
+import com.nicta.uimavlab.types.itemanns.IntonationAnnotation;
+import com.nicta.uimavlab.types.itemanns.LatchedUtteranceAnnotation;
+import com.nicta.uimavlab.types.itemanns.MicroPauseAnnotation;
+import com.nicta.uimavlab.types.itemanns.PauseAnnotation;
+import com.nicta.uimavlab.types.itemanns.SpeakerAnnotation;
 import com.nicta.vlabclient.RestClient;
 import com.nicta.vlabclient.UnknownServerAPIVersionException;
-import com.nicta.vlabclient.entity.*;
+import com.nicta.vlabclient.entity.Item;
+import com.nicta.vlabclient.entity.ItemList;
+import com.nicta.vlabclient.entity.TextAnnotation;
+import com.nicta.vlabclient.entity.TextDocument;
+import com.nicta.vlabclient.entity.UnknownValueException;
+import com.nicta.vlabclient.entity.UnsupportedLDSchemaException;
 
 /**
  * @author amack
@@ -36,10 +51,12 @@ import com.nicta.vlabclient.entity.*;
 @TypeCapability(outputs = { 
 		"com.nicta.uimavlab.types.VLabItemSource",
 		"com.nicta.uimavlab.types.VLabDocSource",
-		"com.nicta.uimavlab.types.ItemAnnotation",
-		"com.nicta.uimavlab.types.ItemMetadata"
+		"com.nicta.uimavlab.types.UnknownItemAnnotation",
+		"com.nicta.uimavlab.types.ItemMetadata",
+		"com.nicta.uimavlab.types.itemanns.*"
 })
 public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
+	private static final Logger LOG = LoggerFactory.getLogger(ItemListCollectionReader.class);
 
 	public static final String PARAM_VLAB_BASE_URL = "vLabBaseUrl";
 	public static final String PARAM_VLAB_ITEM_LIST_ID = "ItemListId";
@@ -51,9 +68,10 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 			+ "set of UIMA CAS documents")
 	private String itemListId;
 
-	@ConfigurationParameter(name = PARAM_VLAB_BASE_URL, mandatory = true, description = "Base URL for the HCS vLab REST/JSON API server "
+	@ConfigurationParameter(name = PARAM_VLAB_BASE_URL, mandatory = true, 
+			description = "Base URL for the HCS vLab REST/JSON API server "
 			+ "- eg http://vlab.example.org/ ; the URL for the item list "
-			+ " will be constructed by appending 'item_lists/{item_list_id}.json'" + "to this URL")
+			+ " will be constructed by appending 'item_lists/{item_list_id}.json' to this URL")
 	private String baseUrl;
 
 	@ConfigurationParameter(name = PARAM_VLAB_API_KEY, mandatory = true, description = "API key for the vLab account (available from the web interface")
@@ -144,12 +162,33 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 		JCas jcas = vlis.getCAS().getJCas();
 		vlis.setAnnotations(new FSArray(jcas, anns.size()));
 		for (TextAnnotation ta : anns) {
-			ItemAnnotation itAn = new ItemAnnotation(jcas, ta.getStartOffset(), ta.getEndOffset());
+			ItemAnnotation itAn = getItemAnnotationForType(jcas, ta.getType());
+			itAn.setBegin(ta.getStartOffset());
+			itAn.setEnd(ta.getEndOffset());
 			itAn.setAnnType(ta.getType());
 			itAn.setLabel(ta.getLabel());
 			itAn.addToIndexes();
 			vlis.setAnnotations(ctr++, itAn);
 		}
+	}
+	
+	private ItemAnnotation getItemAnnotationForType(JCas jcas, String annType) {
+		if (annType.equals("speaker"))
+			return new SpeakerAnnotation(jcas);
+		else if (annType.equals("pause"))
+			return new PauseAnnotation(jcas);
+		else if (annType.equals("micropause"))
+			return new MicroPauseAnnotation(jcas);
+		else if (annType.equals("intonation"))
+			return new IntonationAnnotation(jcas);
+		else if (annType.equals("latched-utterance"))
+			return new LatchedUtteranceAnnotation(jcas);
+		else if (annType.equals("dubious-nonsense"))
+			return new DubiousNonsenseAnnotation(jcas);
+		else if (annType.equals("elongation"))
+			return new ElongationAnnotation(jcas);
+		LOG.info("Unknown annotation type {}", annType);
+		return new UnknownItemAnnotation(jcas);
 	}
 
 	private void storeSourceDoc(TextDocument td, CAS view) throws CASException {
