@@ -32,7 +32,7 @@ An example of usage of this class can be found in `src/main/java/com/nicta/uimav
   * an item list ID
   * an output directory
 
-It creates a UIMA pipeline (with UIMAfit, rather than an XML-based CPE) using the collection reader and an extra processing component which just serializes the documents output by the collection reader to disk (in a real-world pipeline, we might want to do more at this stage).
+It creates a UIMA pipeline (with UIMAfit, rather than an XML-based CPE) using the collection reader and an extra processing component which just serializes the documents output by the collection reader to disk (in a real-world pipeline, we might want to do more at this stage). You can then manually examine the created XML from the output directory, or run the Annotation Viewer GUI (`org.apache.uima.tools.AnnotationViewerMain`), specifying  `typesystem.xml` which will have been written the root of the output directory as the type system.
 
 For a more traditional workflow based on CPEs defined by XML descriptors, there is an XML-descriptor for the Collection Reader which is automatically written to `target/generated-sources/uimafit/com/nicta/uimavlab/ItemListCollectionReader.xml` when `mvn package` is run. However currently this doesn't produce a type system in the XML (as documented in an [open issue][uimafit-ts-issue]), so there will soon be a class to manually create these descriptors if they are needed (for now, a fifth argument to `com.nicta.uimavlab.examples.ItemListReaderExample` can be used to specify a directory to write the preconfigured descriptors to). These descriptors can then be used to manually create a CPE (by writing XML), or by running the CPE configurator GUI (`org.apache.uima.tools.cpm.CpmFrame`).
 
