@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.nicta.vlabclient.RestClientException;
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
@@ -99,12 +100,12 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		try {
 			fetchItemList();
-		} catch (UnknownServerAPIVersionException e) {
+		} catch (RestClientException e) {
 			throw new ResourceInitializationException(e);
 		}
 	}
 
-	private void fetchItemList() throws UnknownServerAPIVersionException {
+	private void fetchItemList() throws RestClientException {
 		RestClient client = new RestClient(baseUrl, apiKey);
 		try {
 			itemList = client.getItemList(itemListId);
