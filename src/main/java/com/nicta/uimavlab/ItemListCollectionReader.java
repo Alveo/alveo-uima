@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.nicta.vlabclient.RestClientException;
+import com.nicta.vlabclient.entity.HCSvLabException;
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
@@ -37,13 +37,12 @@ import com.nicta.uimavlab.types.itemanns.MicroPauseAnnotation;
 import com.nicta.uimavlab.types.itemanns.PauseAnnotation;
 import com.nicta.uimavlab.types.itemanns.SpeakerAnnotation;
 import com.nicta.vlabclient.RestClient;
-import com.nicta.vlabclient.UnknownServerAPIVersionException;
 import com.nicta.vlabclient.entity.Item;
 import com.nicta.vlabclient.entity.ItemList;
 import com.nicta.vlabclient.entity.TextAnnotation;
 import com.nicta.vlabclient.entity.TextDocument;
-import com.nicta.vlabclient.entity.UnknownValueException;
-import com.nicta.vlabclient.entity.UnsupportedLDSchemaException;
+import com.nicta.vlabclient.UnknownValueException;
+import com.nicta.vlabclient.UnsupportedLDSchemaException;
 
 /**
  * @author amack
@@ -100,12 +99,12 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		try {
 			fetchItemList();
-		} catch (RestClientException e) {
+		} catch (HCSvLabException e) {
 			throw new ResourceInitializationException(e);
 		}
 	}
 
-	private void fetchItemList() throws RestClientException {
+	private void fetchItemList() throws HCSvLabException {
 		RestClient client = new RestClient(baseUrl, apiKey);
 		try {
 			itemList = client.getItemList(itemListId);
