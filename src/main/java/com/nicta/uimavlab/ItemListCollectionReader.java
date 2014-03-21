@@ -217,6 +217,8 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	private void storeMetadata(Item next, VLabItemSource vlis) throws CASException {
 		Map<String, String> orig = next.getMetadata();
 		ItemMetadata metadata = new ItemMetadata(vlis.getCAS().getJCas());
+		// TODO: work out how to store all the missing metadata keys, as arbitrary key-value pairs
+		//   see http://comments.gmane.org/gmane.comp.apache.uima.general/5179 for ideas
 		metadata.setTitle(orig.get("http://purl.org/dc/terms/title"));
 		metadata.setCollection(orig.get("http://purl.org/dc/terms/isPartOf"));
 		metadata.setCreator(orig.get("http://purl.org/dc/terms/creator"));
