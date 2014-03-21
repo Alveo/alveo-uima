@@ -24,6 +24,7 @@ public class ItemListReaderExample {
 						+ "    API_KEY is the API key for your user account, obtainable from the web interface;\n"
 						+ "    ITEM_LIST_ID is the ID of a preconfigured item list you want to retrieve and \n "
 						+ "       turn into a UIMA collection;\n"
+						+ "    OUTPUT_DIR is where the XMI files will be written to\n"
 						+ "    DESCRIPTOR_DIR, if provided, is a directory to write the configured descriptors to");
 	}
 
@@ -47,8 +48,9 @@ public class ItemListReaderExample {
 			descriptorDir = null;
 		}
 		CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
-				ItemListCollectionReader.class, ItemListCollectionReader.PARAM_VLAB_BASE_URL,
-				serverUri, ItemListCollectionReader.PARAM_VLAB_API_KEY, apiKey,
+				ItemListCollectionReader.class,
+				ItemListCollectionReader.PARAM_VLAB_BASE_URL, serverUri,
+				ItemListCollectionReader.PARAM_VLAB_API_KEY, apiKey,
 				ItemListCollectionReader.PARAM_VLAB_ITEM_LIST_ID, itemListId,
 				ItemListCollectionReader.PARAM_INCLUDE_RAW_DOCS, false);
 		AnalysisEngineDescription casWriter = AnalysisEngineFactory.createEngineDescription(
