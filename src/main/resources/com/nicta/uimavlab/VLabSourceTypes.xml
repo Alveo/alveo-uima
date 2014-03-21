@@ -79,28 +79,28 @@
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
         <featureDescription>
-          <name>wordCount</name>
-          <description>Number of words in the document</description>
-          <rangeTypeName>uima.cas.Integer</rangeTypeName>
-        </featureDescription>
-        <featureDescription>
-          <name>mode</name>
-          <description>Mode in which the document is encoded</description>
-          <rangeTypeName>uima.cas.String</rangeTypeName>
-        </featureDescription>
-        <featureDescription>
-          <name>contributor</name>
+          <name>creator</name>
           <description>Name of the creator</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
         <featureDescription>
-          <name>writtenMode</name>
-          <description/>
+          <name>identifier</name>
+          <description>Unique identifier for the document within the corpus</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
         <featureDescription>
-          <name>identifier</name>
-          <description/>
+          <name>handle</name>
+          <description>Unique URI identifying the document uniquely on the server</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
+          <name>recordingDate</name>
+          <description>Date on which the recording was made</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
+          <name>discourseType</name>
+          <description>What type of discourse is stored in the item</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
       </features>

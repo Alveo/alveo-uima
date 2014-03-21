@@ -217,14 +217,14 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	private void storeMetadata(Item next, VLabItemSource vlis) throws CASException {
 		Map<String, String> orig = next.getMetadata();
 		ItemMetadata metadata = new ItemMetadata(vlis.getCAS().getJCas());
-		metadata.setTitle(orig.get("Title"));
-		metadata.setCollection(orig.get("Collection"));
-		metadata.setWordCount(Integer.parseInt(orig.get("Word Count")));
-		metadata.setContributor(orig.get("Contributor"));
-		metadata.setMode(orig.get("Mode"));
-		metadata.setIdentifier(orig.get("Identifier"));
+		metadata.setTitle(orig.get("http://purl.org/dc/terms/title"));
+		metadata.setCollection(orig.get("http://purl.org/dc/terms/isPartOf"));
+		metadata.setCreator(orig.get("http://purl.org/dc/terms/creator"));
+		metadata.setIdentifier(orig.get("http://purl.org/dc/terms/identifier"));
+		metadata.setDiscourseType(orig.get("http://www.language-archives.org/OLAC/1.1/discourse_type"));
+		metadata.setRecordingDate(orig.get("http://www.language-archives.org/OLAC/1.1/recordingdate"));
 		vlis.setMetadata(metadata);
-		vlis.getCAS().setDocumentLanguage(orig.get("Language (ISO 639-3 Code)"));
+		vlis.getCAS().setDocumentLanguage(orig.get("http://www.language-archives.org/OLAC/1.1/language"));
 	}
 
 	/*
