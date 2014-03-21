@@ -4,7 +4,7 @@
 
 	<groupId>com.nicta</groupId>
 	<artifactId>uimavlab</artifactId>
-	<version>0.1-SNAPSHOT</version>
+	<version>0.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<organization>
@@ -19,8 +19,9 @@
 	</developers>
 	<inceptionYear>2013</inceptionYear>
 	<name>uimavlab</name>
-	<description>UIMA components to read from the HCS vLab API and output in a UIMA format</description>
-	<url>http://opennicta.com/home/health/uimavlab</url>
+	<description>UIMA components to read from the HCS vLab API and output in a UIMA format, and to translate
+    to read UIMA annotations then write them back to the vLab server</description>
+	<url>http://bitbucket.org/andymackinlay/uimavlab</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -41,7 +42,7 @@
 		<dependency>
 			<groupId>com.nicta</groupId>
 			<artifactId>vlabclient</artifactId>
-			<version>0.4.1-SNAPSHOT</version>
+			<version>0.5.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.uima</groupId>
