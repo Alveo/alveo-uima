@@ -4,23 +4,43 @@
 package com.nicta.uimavlab;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.nicta.vlabclient.entity.EntityNotFoundException;
 import com.nicta.vlabclient.entity.HCSvLabException;
+import com.nicta.vlabclient.entity.InvalidServerAddressException;
+import com.nicta.vlabclient.entity.UnauthorizedAPIKeyException;
 import org.apache.uima.UimaContext;
+import org.apache.uima.cas.ArrayFS;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
+import org.apache.uima.cas.Feature;
+import org.apache.uima.cas.FeatureStructure;
+import org.apache.uima.cas.Type;
+import org.apache.uima.cas.TypeSystem;
+import org.apache.uima.cas.text.AnnotationFS;
 import org.apache.uima.collection.CollectionException;
+import org.apache.uima.collection.CollectionReader;
+import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.fit.component.CasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.descriptor.TypeCapability;
+import org.apache.uima.fit.factory.CollectionReaderFactory;
+import org.apache.uima.fit.factory.ConfigurationParameterFactory;
+import static org.apache.uima.fit.factory.ConfigurationParameterFactory.ConfigurationData;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
+import org.apache.uima.jcas.tcas.DocumentAnnotation;
 import org.apache.uima.resource.ResourceInitializationException;
+import org.apache.uima.resource.metadata.TypeDescription;
+import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
+import org.apache.uima.util.TypeSystemUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,8 +72,8 @@ import com.nicta.vlabclient.UnsupportedLDSchemaException;
 		"com.nicta.uimavlab.types.VLabItemSource",
 		"com.nicta.uimavlab.types.VLabDocSource",
 		"com.nicta.uimavlab.types.UnknownItemAnnotation",
-		"com.nicta.uimavlab.types.ItemMetadata",
-		"com.nicta.uimavlab.types.itemanns.*"
+		"com.nicta.uimavlab.types.GeneratedItemAnnotation",
+		"com.nicta.uimavlab.types.ItemMetadata"
 })
 public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	private static final Logger LOG = LoggerFactory.getLogger(ItemListCollectionReader.class);
@@ -87,12 +107,52 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	private Iterator<? extends Item> itemsIter;
 	private int itemsFetched;
 	private int totalItems;
+	private Map<String, Type> urisToAnnTypes = new HashMap<String, Type>();
 
 	/**
 	 * 
 	 */
 	public ItemListCollectionReader() {
 		// TODO Auto-generated constructor stub
+	}
+
+	public static CollectionReaderDescription createDescription(Object... confData) throws ResourceInitializationException {
+		ConfigurationData confDataParsed = ConfigurationParameterFactory.createConfigurationData(confData);
+		String itemListId = null, vlabUrl = null, vlabApiKey = null;
+		// since we don't yet have a reader, we need to semi-manually parse the params
+		for (int i = 0; i < confDataParsed.configurationParameters.length; i++) {
+			String paramName = confDataParsed.configurationParameters[i].getName();
+			Object value = confDataParsed.configurationValues[i];
+			if (paramName.equals(PARAM_VLAB_API_KEY))
+				vlabApiKey = (String) value;
+			else if (paramName.equals(PARAM_VLAB_BASE_URL))
+				vlabUrl = (String) value;
+			else if (paramName.equals(PARAM_VLAB_ITEM_LIST_ID))
+				itemListId = (String) value;
+		}
+		if (itemListId == null || vlabApiKey == null || vlabUrl == null)
+			throw new ResourceInitializationException(ResourceInitializationException.CONFIG_SETTING_ABSENT,
+					new Object[] {PARAM_VLAB_API_KEY + ", " + PARAM_VLAB_BASE_URL + ", " + PARAM_VLAB_ITEM_LIST_ID});
+		TypeSystemDescription tsd;
+		try {
+			tsd = ItemListCollectionReader.getTypeSystemDescription(vlabUrl, vlabApiKey, itemListId);
+		} catch (Exception e) {
+			throw new ResourceInitializationException(e);
+		}
+		return CollectionReaderFactory.createReaderDescription(ItemListCollectionReader.class,
+				tsd, confData);
+	}
+
+	private static TypeSystemDescription getTypeSystemDescription(String vlabUrl, String vlabApiKey, String itemListId)
+			throws UnauthorizedAPIKeyException, EntityNotFoundException,
+			InvalidServerAddressException, ResourceInitializationException, URISyntaxException {
+		RestClient client = new RestClient(vlabUrl, vlabApiKey);
+		TypeSystemAutoGenerator tsag = new TypeSystemAutoGenerator(client);
+		for (Item item : client.getItemList(itemListId).getCatalogItems()) {
+			String corpus = item.getMetadata().get("http://purl.org/dc/terms/isPartOf");
+			tsag.addCorpus(corpus);
+		}
+		return tsag.getTypeSystemDescription();
 	}
 
 	@Override
@@ -151,7 +211,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 		}
 	}
 
-	private void storeAnnotations(Item next, VLabItemSource vlis) throws CASException {
+	private void storeAnnotations(Item next, AnnotationFS vlabItemSrc) throws CASException {
 		List<TextAnnotation> anns;
 		try {
 			anns = next.getTextAnnotations();
@@ -159,36 +219,50 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 			throw new CASException(e);
 		}
 		int ctr = 0;
-		JCas jcas = vlis.getCAS().getJCas();
-		vlis.setAnnotations(new FSArray(jcas, anns.size()));
+		CAS cas = vlabItemSrc.getCAS();
+		TypeSystem ts = cas.getTypeSystem();
+		ArrayFS fsForAnns = cas.createArrayFS(anns.size());
+		Feature annTypeFeature = ts.getFeatureByFullName("com.nicta.uimavlab.types.ItemAnnotation:annType");
+		Feature labelFeature = ts.getFeatureByFullName("com.nicta.uimavlab.types.ItemAnnotation:label");
+
 		for (TextAnnotation ta : anns) {
-			ItemAnnotation itAn = getItemAnnotationForType(jcas, ta.getType());
-			itAn.setBegin(ta.getStartOffset());
-			itAn.setEnd(ta.getEndOffset());
-			itAn.setAnnType(ta.getType());
-			itAn.setLabel(ta.getLabel());
-			itAn.addToIndexes();
-			vlis.setAnnotations(ctr++, itAn);
+			Type type = getTypeForAnnotation(ts, ta.getType());
+			AnnotationFS afs = cas.createAnnotation(type, ta.getStartOffset(), ta.getEndOffset());
+			afs.setFeatureValueFromString(annTypeFeature, ta.getType());
+			afs.setFeatureValueFromString(labelFeature, ta.getLabel());
+			cas.addFsToIndexes(afs);
+			fsForAnns.set(ctr++, afs);
 		}
+		vlabItemSrc.setFeatureValue(ts.getFeatureByFullName("com.nicta.uimavlab.types.VLabItemSource:annotations"),
+				fsForAnns);
+		cas.addFsToIndexes(fsForAnns);
 	}
 	
-	private ItemAnnotation getItemAnnotationForType(JCas jcas, String annType) {
-		if (annType.equals("speaker"))
-			return new SpeakerAnnotation(jcas);
-		else if (annType.equals("pause"))
-			return new PauseAnnotation(jcas);
-		else if (annType.equals("micropause"))
-			return new MicroPauseAnnotation(jcas);
-		else if (annType.equals("intonation"))
-			return new IntonationAnnotation(jcas);
-		else if (annType.equals("latched-utterance"))
-			return new LatchedUtteranceAnnotation(jcas);
-		else if (annType.equals("dubious-nonsense"))
-			return new DubiousNonsenseAnnotation(jcas);
-		else if (annType.equals("elongation"))
-			return new ElongationAnnotation(jcas);
-		LOG.info("Unknown annotation type {}", annType);
-		return new UnknownItemAnnotation(jcas);
+	private Type getTypeForAnnotation(TypeSystem typeSystem, String annTypeUri) {
+		if (urisToAnnTypes.size() == 0)
+			cacheAnnTypeUris(typeSystem);
+		Type type = urisToAnnTypes.get(annTypeUri);
+		if (type == null) {
+			LOG.error("Unknown annotation type URI: {}", annTypeUri);
+			type = typeSystem.getType("com.nicta.uimavlab.types.UnknownItemAnnotation");
+		}
+		return type;
+	}
+
+	private void cacheAnnTypeUris(TypeSystem typeSystem) {
+		// XXX: this assumes that all CASes have effectively the same type system.
+		// this will probably be true in practice generally, although
+		// we should maybe clear urisToAnnTypes for each new CAS just in case?
+		TypeSystemDescription tsd = getProcessingResourceMetaData().getTypeSystem();
+		Iterator<Type> types = typeSystem.getTypeIterator();
+		while (types.hasNext()) {
+			Type type = types.next();
+			TypeDescription td = tsd.getType(type.getName());
+			if (td == null)
+				continue;
+			// we have, somewhat dubiously, stored the annotation URI in the type description
+			urisToAnnTypes.put(td.getSourceUrlString(), type);
+		}
 	}
 
 	private void storeSourceDoc(TextDocument td, CAS view) throws CASException {
@@ -205,18 +279,30 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	}
 
 	private void storeMainItem(Item next, CAS mainView) throws CASException {
+//		AnnotationFS vlabItemSource = mainView.getDocumentAnnotation();
+//		TypeSystem ts = mainView.getTypeSystem();
+//		Feature sourceUriFeature = ts.getFeatureByFullName("com.nicta.uimavlab.types.VLabItemSource:sourceUri");
+//		Feature serverBaseFeature = ts.getFeatureByFullName("com.nicta.uimavlab.types.VLabRestInstance:serverBase");
+//		vlabItemSource.setFeatureValueFromString(sourceUriFeature, next.getUri());
+//		vlabItemSource.setFeatureValueFromString(serverBaseFeature, baseUrl);
+//		storeMetadata(next, vlabItemSource);
+//		if (includeAnnotations)
+//			storeAnnotations(next, vlabItemSource);
+//		mainView.addFsToIndexes(vlabItemSource);
+
 		VLabItemSource vlis = new VLabItemSource(mainView.getJCas());
 		vlis.setSourceUri(next.getUri());
 		vlis.setServerBase(baseUrl);
 		storeMetadata(next, vlis);
-		if (includeAnnotations) 
+		if (includeAnnotations)
 			storeAnnotations(next, vlis);
 		vlis.addToIndexes();
 	}
 
-	private void storeMetadata(Item next, VLabItemSource vlis) throws CASException {
+	private void storeMetadata(Item next, AnnotationFS vlabItemSrc) throws CASException {
 		Map<String, String> orig = next.getMetadata();
-		ItemMetadata metadata = new ItemMetadata(vlis.getCAS().getJCas());
+
+		ItemMetadata metadata = new ItemMetadata(vlabItemSrc.getCAS().getJCas());
 		// TODO: work out how to store all the missing metadata keys, as arbitrary key-value pairs
 		//   see http://comments.gmane.org/gmane.comp.apache.uima.general/5179 for ideas
 		metadata.setTitle(orig.get("http://purl.org/dc/terms/title"));
@@ -225,8 +311,10 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 		metadata.setIdentifier(orig.get("http://purl.org/dc/terms/identifier"));
 		metadata.setDiscourseType(orig.get("http://www.language-archives.org/OLAC/1.1/discourse_type"));
 		metadata.setRecordingDate(orig.get("http://www.language-archives.org/OLAC/1.1/recordingdate"));
-		vlis.setMetadata(metadata);
-		vlis.getCAS().setDocumentLanguage(orig.get("http://www.language-archives.org/OLAC/1.1/language"));
+		Feature metadataFeature = vlabItemSrc.getCAS().getTypeSystem().getFeatureByFullName(
+				"com.nicta.uimavlab.types.VLabItemSource:metadata");
+		vlabItemSrc.setFeatureValue(metadataFeature, metadata);
+		vlabItemSrc.getCAS().setDocumentLanguage(orig.get("http://www.language-archives.org/OLAC/1.1/language"));
 	}
 
 	/*

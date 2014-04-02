@@ -122,50 +122,15 @@
         </featureDescription>
       </features>
     </typeDescription>
-  <typeDescription>
+		<typeDescription>
+			<name>com.nicta.uimavlab.types.GeneratedItemAnnotation</name>
+			<description>Annotation type which is generated to conform to the set of known types in a corpus.</description>
+			<supertypeName>com.nicta.uimavlab.types.ItemAnnotation</supertypeName>
+		</typeDescription>
+    <typeDescription>
       <name>com.nicta.uimavlab.types.UnknownItemAnnotation</name>
       <description>Type for annotations where annType does not correspond to a known type.</description>
       <supertypeName>com.nicta.uimavlab.types.ItemAnnotation</supertypeName>
-    </typeDescription>
-    <typeDescription>
-      <name>com.nicta.uimavlab.types.KnownItemAnnotation</name>
-      <description>Common base class for when the annType feature has a value corresponding to a known type. Should always be subclassed.</description>
-      <supertypeName>com.nicta.uimavlab.types.ItemAnnotation</supertypeName>
-    </typeDescription>
-    <typeDescription>
-      <name>com.nicta.uimavlab.types.itemanns.SpeakerAnnotation</name>
-      <description/>
-      <supertypeName>com.nicta.uimavlab.types.KnownItemAnnotation</supertypeName>
-    </typeDescription>
-    <typeDescription>
-      <name>com.nicta.uimavlab.types.itemanns.IntonationAnnotation</name>
-      <description/>
-      <supertypeName>com.nicta.uimavlab.types.KnownItemAnnotation</supertypeName>
-    </typeDescription>
-    <typeDescription>
-      <name>com.nicta.uimavlab.types.itemanns.PauseAnnotation</name>
-      <description/>
-      <supertypeName>com.nicta.uimavlab.types.KnownItemAnnotation</supertypeName>
-    </typeDescription>
-    <typeDescription>
-      <name>com.nicta.uimavlab.types.itemanns.DubiousNonsenseAnnotation</name>
-      <description/>
-      <supertypeName>com.nicta.uimavlab.types.KnownItemAnnotation</supertypeName>
-    </typeDescription>
-    <typeDescription>
-      <name>com.nicta.uimavlab.types.itemanns.MicroPauseAnnotation</name>
-      <description/>
-      <supertypeName>com.nicta.uimavlab.types.KnownItemAnnotation</supertypeName>
-    </typeDescription>
-    <typeDescription>
-      <name>com.nicta.uimavlab.types.itemanns.LatchedUtteranceAnnotation</name>
-      <description/>
-      <supertypeName>com.nicta.uimavlab.types.KnownItemAnnotation</supertypeName>
-    </typeDescription>
-    <typeDescription>
-      <name>com.nicta.uimavlab.types.itemanns.ElongationAnnotation</name>
-      <description/>
-      <supertypeName>com.nicta.uimavlab.types.KnownItemAnnotation</supertypeName>
     </typeDescription>
   </types>
 </typeSystemDescription>

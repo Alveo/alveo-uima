@@ -47,8 +47,7 @@ public class ItemListReaderExample {
 		} catch (ArrayIndexOutOfBoundsException e) {
 			descriptorDir = null;
 		}
-		CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
-				ItemListCollectionReader.class,
+		CollectionReaderDescription reader = ItemListCollectionReader.createDescription(
 				ItemListCollectionReader.PARAM_VLAB_BASE_URL, serverUri,
 				ItemListCollectionReader.PARAM_VLAB_API_KEY, apiKey,
 				ItemListCollectionReader.PARAM_VLAB_ITEM_LIST_ID, itemListId,
