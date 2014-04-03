@@ -279,17 +279,6 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	}
 
 	private void storeMainItem(Item next, CAS mainView) throws CASException {
-//		AnnotationFS vlabItemSource = mainView.getDocumentAnnotation();
-//		TypeSystem ts = mainView.getTypeSystem();
-//		Feature sourceUriFeature = ts.getFeatureByFullName("com.nicta.uimavlab.types.VLabItemSource:sourceUri");
-//		Feature serverBaseFeature = ts.getFeatureByFullName("com.nicta.uimavlab.types.VLabRestInstance:serverBase");
-//		vlabItemSource.setFeatureValueFromString(sourceUriFeature, next.getUri());
-//		vlabItemSource.setFeatureValueFromString(serverBaseFeature, baseUrl);
-//		storeMetadata(next, vlabItemSource);
-//		if (includeAnnotations)
-//			storeAnnotations(next, vlabItemSource);
-//		mainView.addFsToIndexes(vlabItemSource);
-
 		VLabItemSource vlis = new VLabItemSource(mainView.getJCas());
 		vlis.setSourceUri(next.getUri());
 		vlis.setServerBase(baseUrl);
