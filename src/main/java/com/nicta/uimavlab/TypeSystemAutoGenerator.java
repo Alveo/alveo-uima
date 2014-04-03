@@ -41,11 +41,6 @@ public class TypeSystemAutoGenerator {
 	private Set<String> knownTypeNames = new HashSet<String>(40);
 
 	private final TypeSystemDescription tsd;
-//	private Map<String, String> urisToTypeNames;
-
-//	public String getTypeNameForURI(String typeURI) {
-//		return urisToTypeNames.get(typeURI);
-//	}
 
 	public TypeSystemAutoGenerator(RestClient rc) throws ResourceInitializationException {
 		restClient = rc;
