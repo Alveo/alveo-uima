@@ -5,6 +5,9 @@ package com.nicta.uimavlab;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -152,11 +155,36 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 			InvalidServerAddressException, ResourceInitializationException, URISyntaxException, OpenRDFException {
 		RestClient client = new RestClient(vlabUrl, vlabApiKey);
 		TypeSystemAutoGenerator tsag = new TypeSystemAutoGenerator(client);
-		for (Item item : client.getItemList(itemListId).getCatalogItems()) {
-			String corpus = item.getMetadata().get("http://purl.org/dc/terms/isPartOf");
-			tsag.addCorpus(corpus);
-		}
+		for (String corpusName : getCorpusNames())
+			tsag.addCorpus(corpusName);
 		return tsag.getTypeSystemDescription();
+	}
+
+	public static Collection<String> getCorpusNames() {
+		// XXX: horrible hack.
+		// this should be calling a REST API method,
+		// but currently this doesn't exist.
+		// TODO: Once https://track.intersect.org.au/browse/HCSVLAB-868
+		// is fixed, this should be replaced with a call to that method.
+		String[] corpusNames = new String[] {
+				"ace",
+				"art",
+				"austalk",
+				"austlit",
+				"avozes",
+				"braidedchannels",
+				"cooee",
+				"gcsause",
+				"ice",
+				"jakartan_indonesian",
+				"mbep",
+				"mitcheldelbridge",
+				"monash",
+				"paradisec",
+				"pixar",
+				"rirusyd"
+		};
+		return Arrays.asList(corpusNames);
 	}
 
 	@Override

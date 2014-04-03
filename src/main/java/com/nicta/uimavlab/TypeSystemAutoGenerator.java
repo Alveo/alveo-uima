@@ -16,6 +16,8 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sparql.SPARQLRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -36,6 +38,7 @@ import java.util.regex.Pattern;
  * Used to map between annotation type URIs from from HCSvLab Annotations to UIMA types
  */
 public class TypeSystemAutoGenerator {
+	private static final Logger LOG = LoggerFactory.getLogger(TypeSystemAutoGenerator.class);
 	private RestClient restClient;
 	private final Set<String> knownCorpora = new HashSet<String>(20);
 	private Set<String> knownTypeNames = new HashSet<String>(40);
@@ -95,8 +98,26 @@ public class TypeSystemAutoGenerator {
 
 	private void importTypesForCorpus(String corpusName) throws URISyntaxException,
 			QueryEvaluationException, MalformedQueryException, RepositoryException {
-		for (String typeUri : getTypeURIsForCorpus(corpusName))
-			insertType(typeUri);
+		try {
+			for (String typeUri : getTypeURIsForCorpus(corpusName))
+				insertType(typeUri);
+		} catch (QueryEvaluationException e) {
+			Throwable cause = e.getCause();
+			// if it's just an authorization problem, that's probably
+			// because the corpus name is invalid.
+			// this could be because we're hardcoding the corpus names
+			// due to https://track.intersect.org.au/browse/HCSVLAB-868
+			// XXX: once fixed, take out this catch clause
+			boolean isRepoException = cause instanceof RepositoryException;
+			boolean isAuth = isRepoException && cause.getMessage().contains("not authorized");
+			boolean isMissing = isRepoException && cause.getMessage().contains("no such resource");
+			if (isMissing)
+				LOG.error("Collection {} was not found", corpusName);
+			else if (isAuth)
+				LOG.error("Insufficient priveleges for collection {}", corpusName);
+			else
+				throw e;
+		}
 	}
 
 	private static String rawTypeNameForURI(String typeURI) throws URISyntaxException {
