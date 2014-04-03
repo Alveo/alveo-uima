@@ -174,15 +174,4 @@ public class TypeSystemAutoGenerator {
 		}
 		return uris;
 	}
-
-	public static void main(String[] args) throws URISyntaxException {
-		String[] urls = new String[] {
-				"http://example.org/blah/boo/0.4/baz",
-				"http://foo-bar.example.org/qw#first-name",
-				"http://foo-bar.example.org/qw/first-name"
-		};
-		for (String url : urls) {
-			System.out.printf("%s -> %s\n", url, TypeSystemAutoGenerator.rawTypeNameForURI(url));
-		}
-	}
 }
