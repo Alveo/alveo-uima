@@ -42,12 +42,22 @@
 		<dependency>
 			<groupId>com.nicta</groupId>
 			<artifactId>vlabclient</artifactId>
-			<version>0.5.0-SNAPSHOT</version>
+			<version>0.5.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.uima</groupId>
 			<artifactId>uimaj-document-annotation</artifactId>
 			<version>2.4.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-repository-sparql</artifactId>
+			<version>2.8.0-beta2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-queryresultio-sparqljson</artifactId>
+			<version>2.8.0-beta2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.uima</groupId>

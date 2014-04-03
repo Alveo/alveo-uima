@@ -41,6 +41,10 @@ import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 import org.apache.uima.util.TypeSystemUtil;
+import org.openrdf.OpenRDFException;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,7 +149,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 
 	private static TypeSystemDescription getTypeSystemDescription(String vlabUrl, String vlabApiKey, String itemListId)
 			throws UnauthorizedAPIKeyException, EntityNotFoundException,
-			InvalidServerAddressException, ResourceInitializationException, URISyntaxException {
+			InvalidServerAddressException, ResourceInitializationException, URISyntaxException, OpenRDFException {
 		RestClient client = new RestClient(vlabUrl, vlabApiKey);
 		TypeSystemAutoGenerator tsag = new TypeSystemAutoGenerator(client);
 		for (Item item : client.getItemList(itemListId).getCatalogItems()) {

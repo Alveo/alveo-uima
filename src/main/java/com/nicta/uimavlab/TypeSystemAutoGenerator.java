@@ -1,10 +1,21 @@
 package com.nicta.uimavlab;
 
 import com.nicta.vlabclient.RestClient;
+import com.nicta.vlabclient.util.TypeUriFixer;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeDescription;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
+import org.openrdf.OpenRDFException;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQuery;
+import org.openrdf.query.TupleQueryResult;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.sparql.SPARQLRepository;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -42,7 +53,8 @@ public class TypeSystemAutoGenerator {
 	}
 
 
-	public void addCorpus(String corpusName) throws URISyntaxException {
+	public void addCorpus(String corpusName) throws URISyntaxException,
+			OpenRDFException {
 		/** Read the types corresponding to the corpus (aka 'collection', but this already
 		 * has meaning in Java, so we use 'corpus' for clarity. No-op if the corpus has already
 		 * been added.
@@ -86,7 +98,8 @@ public class TypeSystemAutoGenerator {
 //		urisToTypeNames.put(sourceUri, actualTypeName);
 	}
 
-	private void importTypesForCorpus(String corpusName) throws URISyntaxException {
+	private void importTypesForCorpus(String corpusName) throws URISyntaxException,
+			QueryEvaluationException, MalformedQueryException, RepositoryException {
 		for (String typeUri : getTypeURIsForCorpus(corpusName))
 			insertType(typeUri);
 	}
@@ -145,12 +158,20 @@ public class TypeSystemAutoGenerator {
 			return s;
 	}
 
-	private Collection<String> getTypeURIsForCorpus(String corpusName) {
-		ArrayList<String> uris = new ArrayList<String>(); // TODO: Implement properly
-		uris.add("http://example.org/mock-types/speaker");
-		uris.add("http://example.org/mock-types/micropause");
-		uris.add("http://example.org/mock-types/continuing");
-		uris.add("http://example.org/mock-types/intonation");
+	private Collection<String> getTypeURIsForCorpus(String corpusName) throws QueryEvaluationException, MalformedQueryException, RepositoryException {
+		SPARQLRepository repo = restClient.getSparqlRepository(corpusName);
+		String sparql = "SELECT DISTINCT ?type WHERE { ?ann <http://purl.org/dada/schema/0.2#type> ?type }";
+		RepositoryConnection conn = repo.getConnection();
+		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, sparql);
+		TupleQueryResult result = query.evaluate();
+		result.getBindingNames();
+		ArrayList<String> uris = new ArrayList<String>();
+		while (result.hasNext()) {
+			BindingSet bs = result.next();
+			String typeUri = bs.getValue("type").stringValue();
+			typeUri = TypeUriFixer.convertToUriIfNeeded(typeUri); // XXX: temp workaround
+			uris.add(typeUri);
+		}
 		return uris;
 	}
 
