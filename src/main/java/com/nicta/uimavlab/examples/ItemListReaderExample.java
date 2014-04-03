@@ -54,10 +54,12 @@ public class ItemListReaderExample {
 				ItemListCollectionReader.PARAM_INCLUDE_RAW_DOCS, false);
 		AnalysisEngineDescription casWriter = AnalysisEngineFactory.createEngineDescription(
 				XmiWriterCasConsumer.class, XmiWriterCasConsumer.PARAM_OUTPUTDIR, outputDir);
+		casWriter.getAnalysisEngineMetaData().setTypeSystem(reader.getCollectionReaderMetaData().getTypeSystem());
 		if (descriptorDir != null) {
 			reader.toXML(new FileOutputStream(new File(descriptorDir,
 					"ItemListCollectionReader.xml")));
 			casWriter.toXML(new FileOutputStream(new File(descriptorDir, "ItemListToXmiAE.xml")));
+			reader.getCollectionReaderMetaData().getTypeSystem().toXML(new FileOutputStream(new File(descriptorDir, "typesystem-full.xml")));
 		}
 		SimplePipeline.runPipeline(reader, casWriter);
 	}
