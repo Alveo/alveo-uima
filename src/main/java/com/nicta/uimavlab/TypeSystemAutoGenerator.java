@@ -159,7 +159,7 @@ public class TypeSystemAutoGenerator {
 	}
 
 	private Collection<String> getTypeURIsForCorpus(String corpusName) throws QueryEvaluationException, MalformedQueryException, RepositoryException {
-		SPARQLRepository repo = restClient.getSparqlRepository(corpusName);
+		SPARQLRepository repo = restClient.getSPARQLRepository(corpusName);
 		String sparql = "SELECT DISTINCT ?type WHERE { ?ann <http://purl.org/dada/schema/0.2#type> ?type }";
 		RepositoryConnection conn = repo.getConnection();
 		TupleQuery query = conn.prepareTupleQuery(QueryLanguage.SPARQL, sparql);
