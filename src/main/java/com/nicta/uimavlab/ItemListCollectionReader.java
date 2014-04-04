@@ -150,7 +150,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 				tsd, confData);
 	}
 
-	private static TypeSystemDescription getTypeSystemDescription(String vlabUrl, String vlabApiKey, String itemListId)
+	protected static TypeSystemDescription getTypeSystemDescription(String vlabUrl, String vlabApiKey, String itemListId)
 			throws UnauthorizedAPIKeyException, EntityNotFoundException,
 			InvalidServerAddressException, ResourceInitializationException, URISyntaxException, OpenRDFException {
 		RestClient client = new RestClient(vlabUrl, vlabApiKey);
@@ -160,12 +160,18 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 		return tsag.getTypeSystemDescription();
 	}
 
+	/** Get a list of known collections (corpora) */
 	public static Collection<String> getCorpusNames() {
 		// XXX: horrible hack.
 		// this should be calling a REST API method,
 		// but currently this doesn't exist.
 		// TODO: Once https://track.intersect.org.au/browse/HCSVLAB-868
 		// is fixed, this should be replaced with a call to that method.
+		// Note that we can't even set this in the UIMA descriptor, since
+		// we want to know these before the reader has been instantiatied.
+		// If extra collections are listed but are not found or
+		// have insufficient permissions, they will be ignored with a
+		// logged warning.
 		String[] corpusNames = new String[] {
 				"ace",
 				"art",
