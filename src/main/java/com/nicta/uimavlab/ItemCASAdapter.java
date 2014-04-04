@@ -47,13 +47,13 @@ class ItemCASAdapter {
 		this.includeAnnotations = includeAnnotations;
 	}
 
-	public void storeItemInCas(Item next, CAS cas) throws CASException {
+	public void storeItemInCas(Item item, CAS cas) throws CASException {
 		CAS mainView = cas.createView("00: _PRIMARY_ITEM_");
-		mainView.setSofaDataString(next.primaryText(), "text/plain");
-		storeMainItem(next, mainView);
+		mainView.setSofaDataString(item.primaryText(), "text/plain");
+		storeMainItem(item, mainView);
 		int ctr = 1;
 		if (includeRawDocs) {
-			for (TextDocument td : next.textDocuments()) {
+			for (TextDocument td : item.textDocuments()) {
 				++ctr;
 				try {
 					String docType = td.getType();
@@ -66,10 +66,10 @@ class ItemCASAdapter {
 		}
 	}
 
-	private void storeAnnotations(Item next, AnnotationFS vlabItemSrc) throws CASException {
+	private void storeAnnotations(Item item, AnnotationFS vlabItemSrc) throws CASException {
 		List<TextAnnotation> anns;
 		try {
-			anns = next.getTextAnnotations();
+			anns = item.getTextAnnotations();
 		} catch (UnsupportedLDSchemaException e) {
 			throw new CASException(e);
 		}
@@ -132,18 +132,18 @@ class ItemCASAdapter {
 		vlds.addToIndexes();
 	}
 
-	private void storeMainItem(Item next, CAS mainView) throws CASException {
+	private void storeMainItem(Item item, CAS mainView) throws CASException {
 		VLabItemSource vlis = new VLabItemSource(mainView.getJCas());
-		vlis.setSourceUri(next.getUri());
+		vlis.setSourceUri(item.getUri());
 		vlis.setServerBase(serverBaseUrl);
-		storeMetadata(next, vlis);
+		storeMetadata(item, vlis);
 		if (includeAnnotations)
-			storeAnnotations(next, vlis);
+			storeAnnotations(item, vlis);
 		vlis.addToIndexes();
 	}
 
-	private void storeMetadata(Item next, AnnotationFS vlabItemSrc) throws CASException {
-		Map<String, String> orig = next.getMetadata();
+	private void storeMetadata(Item item, AnnotationFS vlabItemSrc) throws CASException {
+		Map<String, String> orig = item.getMetadata();
 
 		ItemMetadata metadata = new ItemMetadata(vlabItemSrc.getCAS().getJCas());
 		// TODO: work out how to store all the missing metadata keys, as arbitrary key-value pairs
