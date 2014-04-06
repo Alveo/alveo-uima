@@ -59,7 +59,8 @@ public class ItemListReaderExample {
 			reader.toXML(new FileOutputStream(new File(descriptorDir,
 					"ItemListCollectionReader.xml")));
 			casWriter.toXML(new FileOutputStream(new File(descriptorDir, "ItemListToXmiAE.xml")));
-			reader.getCollectionReaderMetaData().getTypeSystem().toXML(new FileOutputStream(new File(descriptorDir, "typesystem-full.xml")));
+			reader.getCollectionReaderMetaData().getTypeSystem().toXML(
+					new FileOutputStream(new File(descriptorDir, "typesystem-full.xml")));
 		}
 		SimplePipeline.runPipeline(reader, casWriter);
 	}
