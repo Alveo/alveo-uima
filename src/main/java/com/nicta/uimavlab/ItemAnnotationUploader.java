@@ -35,9 +35,14 @@ import java.util.List;
 public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 	public static final String PARAM_VLAB_BASE_URL = "vLabBaseUrl";
 	public static final String PARAM_VLAB_API_KEY = "vLabApiKey";
-	private static final String PARAM_LABEL_FEATURE_NAMES = "labelFeatureNames";
-	private static final String PARAM_ANNTYPE_FEATURE_NAMES = "annTypeFeatureNames";
+	public static final String PARAM_LABEL_FEATURE_NAMES = "labelFeatureNames";
+	public static final String PARAM_ANNTYPE_FEATURE_NAMES = "annTypeFeatureNames";
 
+	/** The default feature name which, if found, is used to set the type of an annotation */
+	public static final String DEFAULT_ANNTYPE_FEATURE = "com.nicta.uimavlab.types.ItemAnnotation:label";
+
+	/** The default feature name which, if found, is used to set the label of an annotation */
+	public static final String DEFAULT_LABEL_FEATURE = "com.nicta.uimavlab.types.ItemAnnotation:annType";
 
 	@ConfigurationParameter(name = PARAM_VLAB_BASE_URL, mandatory = true,
 			description = "Base URL for the HCS vLab REST/JSON API server "
@@ -54,19 +59,21 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 					"labels in HCS vLab (first match will be used); " +
 					"the default entry is 'com.nicta.uimavlab.types.ItemAnnotation:label' " +
 					"which you probably want to include if you set this parameter")
-	private String[] labelFeatureNames = new String[] { "com.nicta.uimavlab.types.ItemAnnotation:label" };
+	private String[] labelFeatureNames = new String[] { DEFAULT_LABEL_FEATURE };
 
 	@ConfigurationParameter(name = PARAM_ANNTYPE_FEATURE_NAMES, mandatory = false,
 			description = "Fully-qualified feature names on UIMA annotations, the values of which will be mapped to " +
-					"annotation type URIs in HCS vLab (using the first match after processing the list in order); 0" +
-					"the default entry is 'com.nicta.uimavlab.types.ItemAnnotation:annType' " +
-					"which you probably want to include if you set this parameter")
-	private String[] annTypeFeatureNames = new String[] { "com.nicta.uimavlab.types.ItemAnnotation:annType" };
+					"annotation type URIs in HCS vLab (using the first match after processing the list in order); " +
+					"The default entry is 'com.nicta.uimavlab.types.ItemAnnotation:annType' " +
+					"which you almost certainly want to include if you set this parameter. If no match is found " +
+					"in this list a type URI is automatically created from the qualified type name")
+	private String[] annTypeFeatureNames = new String[] { DEFAULT_ANNTYPE_FEATURE };
 
 	private RestClient apiClient;
 	private ItemCASAdapter casAdapter;
-	private List<Feature> annTypeFeatures;
-	private List<Feature> labelFeatures;
+	private List<Feature> annTypeFeatures = new ArrayList<Feature>();
+	private List<Feature> labelFeatures = new ArrayList<Feature>();
+	private TypeSystem currentTypeSystem = null;
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
@@ -77,20 +84,26 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 			throw new ResourceInitializationException(e);
 		}
 
-		TypeSystemDescription tsd = TypeSystemUtil.typeSystem2TypeSystemDescription(getResultSpecification().getTypeSystem());
+	}
+
+	private void initForTypeSystem(TypeSystem ts) {
+		if (ts.equals(currentTypeSystem))
+			return;
+		currentTypeSystem = ts;
+		TypeSystemDescription tsd = TypeSystemUtil.typeSystem2TypeSystemDescription(currentTypeSystem);
 		casAdapter = new ItemCASAdapter(tsd, baseUrl, false, true);
 		initFeatureMappings();
+
 	}
 
 	private void initFeatureMappings() {
-		TypeSystem ts = getResultSpecification().getTypeSystem();
 		for (String annTypeFN: annTypeFeatureNames) {
-			Feature feat = ts.getFeatureByFullName(annTypeFN);
+			Feature feat = currentTypeSystem.getFeatureByFullName(annTypeFN);
 			if (feat != null)
 				annTypeFeatures.add(feat);
 		}
 		for (String labelFN: labelFeatureNames) {
-			Feature feat = ts.getFeatureByFullName(labelFN);
+			Feature feat = currentTypeSystem.getFeatureByFullName(labelFN);
 			if (feat != null)
 				labelFeatures.add(feat);
 		}
@@ -102,6 +115,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 		// then iterate through the supplied CAS, keeping any annotations which
 		// don't correspond to anything in the original item
 		// then bulk-upload these annotations.
+		initForTypeSystem(aCAS.getTypeSystem());
 		Item apiItem;
 		CAS casOfOrig;
 		try {
