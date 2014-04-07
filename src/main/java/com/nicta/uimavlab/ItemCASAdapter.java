@@ -48,7 +48,7 @@ class ItemCASAdapter {
 	}
 
 	public void storeItemInCas(Item item, CAS cas) throws CASException {
-		cas.setSofaDataString(item.primaryText(), "text/plain");
+		storeMainItem(item, cas);
 		int ctr = 1;
 		if (includeRawDocs) {
 			for (TextDocument td : item.textDocuments()) {
@@ -131,6 +131,7 @@ class ItemCASAdapter {
 	}
 
 	private void storeMainItem(Item item, CAS mainView) throws CASException {
+		mainView.setSofaDataString(item.primaryText(), "text/plain");
 		VLabItemSource vlis = new VLabItemSource(mainView.getJCas());
 		vlis.setSourceUri(item.getUri());
 		vlis.setServerBase(serverBaseUrl);
@@ -155,7 +156,7 @@ class ItemCASAdapter {
 		Feature metadataFeature = vlabItemSrc.getCAS().getTypeSystem().getFeatureByFullName(
 				"com.nicta.uimavlab.types.VLabItemSource:metadata");
 		vlabItemSrc.setFeatureValue(metadataFeature, metadata);
-		vlabItemSrc.getCAS().setDocumentLanguage(orig.get("http://www.language-archives.org/OLAC/1.1/language"));
+		vlabItemSrc.getCAS().setDocumentLanguage(orig.get("http://www.language-archives.org/OLAC/1.1/language").substring(0, 2));
 	}
 
 }
