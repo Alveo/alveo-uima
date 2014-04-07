@@ -48,9 +48,7 @@ class ItemCASAdapter {
 	}
 
 	public void storeItemInCas(Item item, CAS cas) throws CASException {
-		CAS mainView = cas.createView("00: _PRIMARY_ITEM_");
-		mainView.setSofaDataString(item.primaryText(), "text/plain");
-		storeMainItem(item, mainView);
+		cas.setSofaDataString(item.primaryText(), "text/plain");
 		int ctr = 1;
 		if (includeRawDocs) {
 			for (TextDocument td : item.textDocuments()) {
