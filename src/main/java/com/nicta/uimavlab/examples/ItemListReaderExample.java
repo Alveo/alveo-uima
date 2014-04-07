@@ -1,67 +1,96 @@
 package com.nicta.uimavlab.examples;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
-import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
+import org.apache.uima.resource.ResourceInitializationException;
 import org.xml.sax.SAXException;
 
 import com.nicta.uimavlab.ItemListCollectionReader;
 
 public class ItemListReaderExample {
-	public static void usage() {
-		System.err
-				.println("Usage: "
-						+ ItemListReaderExample.class.getCanonicalName()
-						+ " SERVER_URI API_KEY ITEM_LIST_ID OUTPUT_DIR [DESCRIPTOR_DIR]\n"
-						+ "    SERVER_URI refers to the base URI of the HCS vLab server;\n"
-						+ "    API_KEY is the API key for your user account, obtainable from the web interface;\n"
-						+ "    ITEM_LIST_ID is the ID of a preconfigured item list you want to retrieve and \n "
-						+ "       turn into a UIMA collection;\n"
-						+ "    OUTPUT_DIR is where the XMI files will be written to\n"
-						+ "    DESCRIPTOR_DIR, if provided, is a directory to write the configured descriptors to");
+	protected static class CLParams {
+
+		@Parameter(names = {"-u", "--server-url"}, required = true, description = "Base URL of HCS vLab server")
+		private String serverUrl;
+
+		@Parameter(names = {"-k", "--api-key"}, required = true,
+				description = "API key for for your user account, obtainable from the web interface")
+		private String apiKey;
+
+		@Parameter(names = { "--help", "-h", "-?" }, help = true, description = "Display this help text")
+		private boolean help;
+
+		@Parameter(names = { "--descriptor-dir"}, required = false,
+				description = "If provided, a directory where descriptors will be written")
+		private String descriptorDir = null;
+
+		@Parameter(names = { "-o", "--xmi-output-dir"}, required = true,
+				description = "The directory where the XMI files produced will be written")
+		private String xmiDir;
+
+		@Parameter(names = { "-i", "--item-list-id"}, required = true, description =
+				"The item list ID to convert to XMI")
+		private String itemListId;
+
 	}
+
+	private static String usage = String.format("Instantiate a basic pipeline " +
+			"using uimaFIT which reads items from an item list and writes the " +
+			"output as XMI files in the requested directory. If --descriptor-dir " +
+			"is set, the descriptors for the collection reader, analysis engine " +
+			"and type system will be written to that directory.");
+
 
 	public static void main(String[] args) throws IOException, UIMAException, SAXException {
 		String serverUri, apiKey, itemListId, outputDir, descriptorDir;
 
-		try {
-			serverUri = args[0];
-			apiKey = args[1];
-			itemListId = args[2];
-			outputDir = args[3];
-		} catch (ArrayIndexOutOfBoundsException e) {
-			usage();
-			System.exit(1);
+		CLParams params = new CLParams();
+		JCommander jcom = new JCommander(params, args);
+		jcom.setProgramName(ItemListReaderExample.class.getName());
+		if (params.help) {
+			System.err.println(usage);
+			jcom.usage();
 			return;
 		}
+		runPipeline(params.serverUrl, params.apiKey, params.xmiDir, params.itemListId, params.descriptorDir);
 
-		try {
-			descriptorDir = args[4];
-		} catch (ArrayIndexOutOfBoundsException e) {
-			descriptorDir = null;
-		}
+	}
+
+	private static void runPipeline(String serverUrl, String apiKey, String xmiDir, String itemListId,
+			String descriptorDir)
+			throws UIMAException, IOException, SAXException {
 		CollectionReaderDescription reader = ItemListCollectionReader.createDescription(
-				ItemListCollectionReader.PARAM_VLAB_BASE_URL, serverUri,
+				ItemListCollectionReader.PARAM_VLAB_BASE_URL, serverUrl,
 				ItemListCollectionReader.PARAM_VLAB_API_KEY, apiKey,
 				ItemListCollectionReader.PARAM_VLAB_ITEM_LIST_ID, itemListId,
 				ItemListCollectionReader.PARAM_INCLUDE_RAW_DOCS, false);
 		AnalysisEngineDescription casWriter = AnalysisEngineFactory.createEngineDescription(
-				XmiWriterCasConsumer.class, XmiWriterCasConsumer.PARAM_OUTPUTDIR, outputDir);
+				XmiWriterCasConsumer.class, XmiWriterCasConsumer.PARAM_OUTPUTDIR, xmiDir);
 		casWriter.getAnalysisEngineMetaData().setTypeSystem(reader.getCollectionReaderMetaData().getTypeSystem());
 		if (descriptorDir != null) {
-			reader.toXML(new FileOutputStream(new File(descriptorDir,
-					"ItemListCollectionReader.xml")));
-			casWriter.toXML(new FileOutputStream(new File(descriptorDir, "ItemListToXmiAE.xml")));
-			reader.getCollectionReaderMetaData().getTypeSystem().toXML(
-					new FileOutputStream(new File(descriptorDir, "typesystem-full.xml")));
+			OutputStream readerOS = new BufferedOutputStream(new FileOutputStream(
+					new File(descriptorDir, "ItemListCollectionReader.xml")));
+			reader.toXML(readerOS);
+			OutputStream tsOS = new BufferedOutputStream(new FileOutputStream(
+					new File(descriptorDir, "typesystem-full.xml")));
+			reader.getCollectionReaderMetaData().getTypeSystem().toXML(tsOS);
+			OutputStream cwOS = new BufferedOutputStream(new FileOutputStream(
+					new File(descriptorDir, "ItemListToXmiAE.xml")));
+			casWriter.toXML(cwOS);
 		}
 		SimplePipeline.runPipeline(reader, casWriter);
+
 	}
 }
