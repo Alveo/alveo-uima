@@ -125,7 +125,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 
 	public static CollectionReaderDescription createDescription(Object... confData) throws ResourceInitializationException {
 		ConfigurationData confDataParsed = ConfigurationParameterFactory.createConfigurationData(confData);
-		String itemListId = null, vlabUrl = null, vlabApiKey = null;
+		String vlabUrl = null, vlabApiKey = null;
 		// since we don't yet have a reader, we need to semi-manually parse the params
 		for (int i = 0; i < confDataParsed.configurationParameters.length; i++) {
 			String paramName = confDataParsed.configurationParameters[i].getName();
@@ -134,15 +134,13 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 				vlabApiKey = (String) value;
 			else if (paramName.equals(PARAM_VLAB_BASE_URL))
 				vlabUrl = (String) value;
-			else if (paramName.equals(PARAM_VLAB_ITEM_LIST_ID))
-				itemListId = (String) value;
 		}
-		if (itemListId == null || vlabApiKey == null || vlabUrl == null)
+		if (vlabApiKey == null || vlabUrl == null)
 			throw new ResourceInitializationException(ResourceInitializationException.CONFIG_SETTING_ABSENT,
 					new Object[] {PARAM_VLAB_API_KEY + ", " + PARAM_VLAB_BASE_URL + ", " + PARAM_VLAB_ITEM_LIST_ID});
 		TypeSystemDescription tsd;
 		try {
-			tsd = ItemListCollectionReader.getTypeSystemDescription(vlabUrl, vlabApiKey, itemListId);
+			tsd = ItemListCollectionReader.getTypeSystemDescription(vlabUrl, vlabApiKey);
 		} catch (Exception e) {
 			throw new ResourceInitializationException(e);
 		}
@@ -150,7 +148,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 				tsd, confData);
 	}
 
-	protected static TypeSystemDescription getTypeSystemDescription(String vlabUrl, String vlabApiKey, String itemListId)
+	protected static TypeSystemDescription getTypeSystemDescription(String vlabUrl, String vlabApiKey)
 			throws UnauthorizedAPIKeyException, EntityNotFoundException,
 			InvalidServerAddressException, ResourceInitializationException, URISyntaxException, OpenRDFException {
 		RestClient client = new RestClient(vlabUrl, vlabApiKey);
