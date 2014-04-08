@@ -16,8 +16,11 @@ import org.apache.uima.cas.CASException;
 import org.apache.uima.cas.CASRuntimeException;
 import org.apache.uima.cas.FSIterator;
 import org.apache.uima.cas.Feature;
+import org.apache.uima.cas.Type;
 import org.apache.uima.cas.TypeSystem;
 import org.apache.uima.cas.admin.CASFactory;
+import org.apache.uima.cas.admin.CASMgr;
+import org.apache.uima.cas.impl.CASImpl;
 import org.apache.uima.cas.text.AnnotationFS;
 import org.apache.uima.fit.component.CasConsumer_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
@@ -25,24 +28,32 @@ import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.apache.uima.util.TypeSystemUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by amack on 4/04/14.
  */
 public class ItemAnnotationUploader extends CasConsumer_ImplBase {
+	private static final Logger LOG = LoggerFactory.getLogger(ItemAnnotationUploader.class);
+
 	public static final String PARAM_VLAB_BASE_URL = "vLabBaseUrl";
 	public static final String PARAM_VLAB_API_KEY = "vLabApiKey";
 	public static final String PARAM_LABEL_FEATURE_NAMES = "labelFeatureNames";
 	public static final String PARAM_ANNTYPE_FEATURE_NAMES = "annTypeFeatureNames";
+	public static final String PARAM_UPLOADABLE_UIMA_TYPE_NAMES = "uploadableUimaTypeNames";
 
 	/** The default feature name which, if found, is used to set the type of an annotation */
-	public static final String DEFAULT_ANNTYPE_FEATURE = "com.nicta.uimavlab.types.ItemAnnotation:label";
+	public static final String DEFAULT_ANNTYPE_FEATURE = "com.nicta.uimavlab.types.ItemAnnotation:annType";
 
 	/** The default feature name which, if found, is used to set the label of an annotation */
-	public static final String DEFAULT_LABEL_FEATURE = "com.nicta.uimavlab.types.ItemAnnotation:annType";
+	public static final String DEFAULT_LABEL_FEATURE = "com.nicta.uimavlab.types.ItemAnnotation:label";
 
 	@ConfigurationParameter(name = PARAM_VLAB_BASE_URL, mandatory = true,
 			description = "Base URL for the HCS vLab REST/JSON API server "
@@ -69,11 +80,17 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 					"in this list a type URI is automatically created from the qualified type name")
 	private String[] annTypeFeatureNames = new String[] { DEFAULT_ANNTYPE_FEATURE };
 
+	@ConfigurationParameter(name = PARAM_UPLOADABLE_UIMA_TYPE_NAMES, mandatory = false,
+			description = "If this parameter is set, only UIMA types with names matching those in this list," +
+					"or their subtypes, will be uploaded")
+	private String[] uploadableUimaTypeNames = null;
+
 	private RestClient apiClient;
 	private ItemCASAdapter casAdapter;
 	private List<Feature> annTypeFeatures = new ArrayList<Feature>();
 	private List<Feature> labelFeatures = new ArrayList<Feature>();
 	private TypeSystem currentTypeSystem = null;
+	private Set<Type> uploadableUimaTypes = null;
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
@@ -86,14 +103,35 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 
 	}
 
-	private void initForTypeSystem(TypeSystem ts) {
+	private void initForTypeSystem(TypeSystem ts) throws AnalysisEngineProcessException {
 		if (ts.equals(currentTypeSystem))
 			return;
 		currentTypeSystem = ts;
 		TypeSystemDescription tsd = TypeSystemUtil.typeSystem2TypeSystemDescription(currentTypeSystem);
 		casAdapter = new ItemCASAdapter(tsd, baseUrl, false, true);
 		initFeatureMappings();
+		try {
+			initTypeWhitelist();
+		} catch (MissingTypeNameException e) {
+			throw new AnalysisEngineProcessException(e);
+		}
+	}
 
+	private void initTypeWhitelist() throws MissingTypeNameException {
+		if (uploadableUimaTypeNames != null) {
+			uploadableUimaTypes = new HashSet<Type>();
+			for (String tn : uploadableUimaTypeNames) {
+				Type t = currentTypeSystem.getType(tn);
+				if (t == null)
+					continue;
+				uploadableUimaTypes.add(t);
+				for (Type subt : currentTypeSystem.getProperlySubsumedTypes(t))
+					uploadableUimaTypes.add(subt);
+			}
+			if (uploadableUimaTypes.size() == 0)
+				throw new MissingTypeNameException("Found no types matching " +
+						uploadableUimaTypeNames + "; no annotations will be uploaded");
+		}
 	}
 
 	private void initFeatureMappings() {
@@ -111,7 +149,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 
 	@Override
 	public void process(CAS aCAS) throws AnalysisEngineProcessException {
-		// start here - create a new CAS and store a copy of the old item in it
+		// create a new CAS and store a copy of the old item in it
 		// then iterate through the supplied CAS, keeping any annotations which
 		// don't correspond to anything in the original item
 		// then bulk-upload these annotations.
@@ -134,6 +172,9 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 			AnnotationFS ann = annIter.next();
 			if (casOfOrig.getAnnotationIndex().contains(ann))
 				continue; // annotation already existed - don't re-add
+			if (uploadableUimaTypes != null
+					&& !uploadableUimaTypes.contains(ann.getType()))
+				continue; // not in whitelist
 			uploadable.add(convertToHCSvLab(ann));
 		}
 
@@ -193,9 +234,15 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 		return apiClient.getItemByUri(itemUri);
 	}
 
-	private CAS getCopyOfOriginalCAS(CAS newCAS, Item origItem) throws CASException {
-		CAS casForOrig = CASFactory.createCAS(newCAS.getTypeSystem()).getCAS();
+	private CAS getCopyOfOriginalCAS(CAS updatedCAS, Item origItem) throws CASException {
+		CAS casForOrig = updatedCAS.createView("original");
 		casAdapter.storeItemInCas(origItem, casForOrig);
 		return casForOrig;
+	}
+
+	public class MissingTypeNameException extends Exception {
+		public MissingTypeNameException(String s) {
+			super(s);
+		}
 	}
 }
