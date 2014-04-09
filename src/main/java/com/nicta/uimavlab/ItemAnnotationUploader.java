@@ -1,8 +1,10 @@
 package com.nicta.uimavlab;
 
+import com.google.common.collect.Lists;
 import com.nicta.uimavlab.types.VLabItemSource;
 import com.nicta.vlabclient.RestClient;
 import com.nicta.vlabclient.TextRestAnnotation;
+import com.nicta.vlabclient.entity.Annotation;
 import com.nicta.vlabclient.entity.EntityNotFoundException;
 import com.nicta.vlabclient.entity.InvalidAnnotationException;
 import com.nicta.vlabclient.entity.InvalidServerAddressException;
@@ -104,8 +106,8 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 	}
 
 	private void initForTypeSystem(TypeSystem ts) throws AnalysisEngineProcessException {
-		if (ts.equals(currentTypeSystem))
-			return;
+//		if (ts.equals(currentTypeSystem))
+//			return;
 		currentTypeSystem = ts;
 		TypeSystemDescription tsd = TypeSystemUtil.typeSystem2TypeSystemDescription(currentTypeSystem);
 		casAdapter = new ItemCASAdapter(tsd, baseUrl, false, true);
@@ -158,7 +160,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 		CAS casOfOrig;
 		try {
 			apiItem = getOriginalFromAPI(aCAS);
-			casOfOrig = getCopyOfOriginalCAS(aCAS, apiItem);
+//			casOfOrig = getCopyOfOriginalCAS(aCAS, apiItem);
 		} catch (CASException e) {
 			throw new AnalysisEngineProcessException(e);
 		} catch (UnauthorizedAPIKeyException e) {
@@ -170,42 +172,56 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 		FSIterator<AnnotationFS> annIter = aCAS.getAnnotationIndex().iterator(true);
 		while (annIter.hasNext()) {
 			AnnotationFS ann = annIter.next();
-			if (casOfOrig.getAnnotationIndex().contains(ann))
-				continue; // annotation already existed - don't re-add
+//			if (casOfOrig.getAnnotationIndex().contains(ann))
+//				continue; // annotation already existed - don't re-add
 			if (uploadableUimaTypes != null
 					&& !uploadableUimaTypes.contains(ann.getType()))
 				continue; // not in whitelist
 			uploadable.add(convertToHCSvLab(ann));
 		}
 
-		try {
-			apiItem.storeNewAnnotations(uploadable);
-		} catch (EntityNotFoundException e) {
-			throw new AnalysisEngineProcessException(e);
-		} catch (UploadIntegrityException e) {
-			throw new AnalysisEngineProcessException(e);
-		} catch (InvalidAnnotationException e) {
-			throw new AnalysisEngineProcessException(e);
+
+		// if we don't upload in chunks we get a socket timeout
+		for (List<TextRestAnnotation> chunk : Lists.partition(uploadable, 50)) {
+			try {
+				apiItem.storeNewAnnotations(chunk);
+			} catch (EntityNotFoundException e) {
+				throw new AnalysisEngineProcessException(e);
+			} catch (UploadIntegrityException e) {
+				throw new AnalysisEngineProcessException(e);
+			} catch (InvalidAnnotationException e) {
+				throw new AnalysisEngineProcessException(e);
+			}
 		}
 	}
 
 	private TextRestAnnotation convertToHCSvLab(AnnotationFS ann) {
 		String annType = null;
+		List<Feature> features = ann.getType().getFeatures();
 		for (Feature atf : annTypeFeatures) {
-			try {
+//			try {
+//				annType = ann.getFeatureValueAsString(atf);
+//				break;
+//			} catch (CASRuntimeException e) {
+//			}
+			// not sure why the above doesn't work
+			if (features.contains(atf)) { // XXX - O(n)
 				annType = ann.getFeatureValueAsString(atf);
 				break;
-			} catch (CASRuntimeException e) {
 			}
 		}
 		if (annType == null) // haven't found anything - make en educated guess
 			annType = mapTypeNameToURI(ann.getType().getName());
 		String label = ""; // don't guess for this one - just make it empty
 		for (Feature lf : labelFeatures) {
-			try {
+//			try {
+//				label = ann.getFeatureValueAsString(lf);
+//				break;
+//			} catch (CASRuntimeException e) {
+//			}
+			if (features.contains(lf)) { // XXX - O(n)
 				label = ann.getFeatureValueAsString(lf);
 				break;
-			} catch (CASRuntimeException e) {
 			}
 		}
 
@@ -220,10 +236,12 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 	private String mapTypeNameToURI(String name) {
 		String[] comps = name.split("\\.");
 		StringBuilder sb = new StringBuilder("http://");
-		for (int i = comps.length - 2; i >= 0; i++) {
-			sb.append(comps[i]);
+		sb.append(comps[comps.length - 2]);
+		for (int i = comps.length - 3; i >= 0; i--) {
 			sb.append(".");
+			sb.append(comps[i]);
 		}
+		sb.append("/");
 		sb.append(comps[comps.length - 1]);
 		return sb.toString();
 	}
