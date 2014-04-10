@@ -3,73 +3,38 @@
  */
 package com.nicta.uimavlab;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
+import com.nicta.vlabclient.RestClient;
 import com.nicta.vlabclient.entity.EntityNotFoundException;
 import com.nicta.vlabclient.entity.HCSvLabException;
 import com.nicta.vlabclient.entity.InvalidServerAddressException;
+import com.nicta.vlabclient.entity.Item;
+import com.nicta.vlabclient.entity.ItemList;
 import com.nicta.vlabclient.entity.UnauthorizedAPIKeyException;
 import org.apache.uima.UimaContext;
-import org.apache.uima.cas.ArrayFS;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
-import org.apache.uima.cas.Feature;
-import org.apache.uima.cas.FeatureStructure;
-import org.apache.uima.cas.Type;
-import org.apache.uima.cas.TypeSystem;
-import org.apache.uima.cas.text.AnnotationFS;
 import org.apache.uima.collection.CollectionException;
-import org.apache.uima.collection.CollectionReader;
 import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.fit.component.CasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.descriptor.TypeCapability;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.ConfigurationParameterFactory;
-import static org.apache.uima.fit.factory.ConfigurationParameterFactory.ConfigurationData;
-import org.apache.uima.jcas.JCas;
-import org.apache.uima.jcas.cas.FSArray;
-import org.apache.uima.jcas.tcas.DocumentAnnotation;
 import org.apache.uima.resource.ResourceInitializationException;
-import org.apache.uima.resource.metadata.TypeDescription;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
-import org.apache.uima.util.TypeSystemUtil;
 import org.openrdf.OpenRDFException;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nicta.uimavlab.types.ItemAnnotation;
-import com.nicta.uimavlab.types.ItemMetadata;
-import com.nicta.uimavlab.types.UnknownItemAnnotation;
-import com.nicta.uimavlab.types.VLabDocSource;
-import com.nicta.uimavlab.types.VLabItemSource;
-import com.nicta.uimavlab.types.itemanns.DubiousNonsenseAnnotation;
-import com.nicta.uimavlab.types.itemanns.ElongationAnnotation;
-import com.nicta.uimavlab.types.itemanns.IntonationAnnotation;
-import com.nicta.uimavlab.types.itemanns.LatchedUtteranceAnnotation;
-import com.nicta.uimavlab.types.itemanns.MicroPauseAnnotation;
-import com.nicta.uimavlab.types.itemanns.PauseAnnotation;
-import com.nicta.uimavlab.types.itemanns.SpeakerAnnotation;
-import com.nicta.vlabclient.RestClient;
-import com.nicta.vlabclient.entity.Item;
-import com.nicta.vlabclient.entity.ItemList;
-import com.nicta.vlabclient.entity.TextAnnotation;
-import com.nicta.vlabclient.entity.TextDocument;
-import com.nicta.vlabclient.UnknownValueException;
-import com.nicta.vlabclient.UnsupportedLDSchemaException;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+
+import static org.apache.uima.fit.factory.ConfigurationParameterFactory.ConfigurationData;
 
 /**
  * @author amack
