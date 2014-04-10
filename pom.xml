@@ -4,17 +4,17 @@
 
 	<groupId>com.nicta</groupId>
 	<artifactId>uimavlab</artifactId>
-	<version>0.2-SNAPSHOT</version>
+	<version>0.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<organization>
-		<name>National ICT Australia</name>
-		<url>http://nicta.com.au/</url>
+		<name>Alveo</name>
+		<url>http://alveo.edu.au/</url>
 	</organization>
 	<developers>
 		<developer>
 			<name>Andrew MacKinlay</name>
-			<email>andrew.mackinlay@nicta.com.au</email>
+			<email>andrew.mackinlay@rmit.edu.au</email>
 		</developer>
 	</developers>
 	<inceptionYear>2013</inceptionYear>
