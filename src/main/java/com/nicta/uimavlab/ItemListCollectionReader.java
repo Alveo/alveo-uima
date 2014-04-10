@@ -116,12 +116,6 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	private int totalItems;
 	private ItemCASAdapter itemCASAdapter;
 
-	/**
-	 * 
-	 */
-	public ItemListCollectionReader() {
-		// TODO Auto-generated constructor stub
-	}
 
 	public static CollectionReaderDescription createDescription(Object... confData) throws ResourceInitializationException {
 		ConfigurationData confDataParsed = ConfigurationParameterFactory.createConfigurationData(confData);
