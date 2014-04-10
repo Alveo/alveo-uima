@@ -1,7 +1,6 @@
 package com.nicta.uimavlab;
 
 import com.nicta.vlabclient.RestClient;
-import com.nicta.vlabclient.util.TypeUriFixer;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeDescription;
@@ -26,7 +25,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -185,7 +183,6 @@ public class TypeSystemAutoGenerator {
 		while (result.hasNext()) {
 			BindingSet bs = result.next();
 			String typeUri = bs.getValue("type").stringValue();
-			typeUri = TypeUriFixer.convertToUriIfNeeded(typeUri); // XXX: temp workaround
 			uris.add(typeUri);
 		}
 		return uris;
