@@ -108,6 +108,7 @@ class ItemCASAdapter {
 		Iterator<Type> types = typeSystem.getTypeIterator();
 		while (types.hasNext()) {
 			Type type = types.next();
+			// START HERE - should maybe refactor to use UIMAToAlveoConverter instances
 			String typeURI = UIMAAlveoTypeMapping.getUriForTypeName(type.getName());
 			urisToAnnTypes.put(typeURI, type);
 		}

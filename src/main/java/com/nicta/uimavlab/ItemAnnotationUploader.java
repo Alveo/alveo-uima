@@ -1,6 +1,8 @@
 package com.nicta.uimavlab;
 
 import com.google.common.collect.Lists;
+import com.nicta.uimavlab.conversions.DefaultUIMAToAlveoConverter;
+import com.nicta.uimavlab.conversions.UIMAToAlveoConverter;
 import com.nicta.uimavlab.types.VLabItemSource;
 import com.nicta.vlabclient.RestClient;
 import com.nicta.vlabclient.TextRestAnnotation;
@@ -90,13 +92,14 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 	private List<Feature> labelFeatures = new ArrayList<Feature>();
 	private TypeSystem currentTypeSystem = null;
 	private Set<Type> uploadableUimaTypes = null;
-	private Map<String, Set<Feature>> cachedFeatureSets = new HashMap<String, Set<Feature>>();
+	private UIMAToAlveoConverter converter = null;
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		super.initialize(context);
 		try {
 			apiClient = new RestClient(baseUrl, apiKey);
+			converter = new DefaultUIMAToAlveoConverter(annTypeFeatureNames, labelFeatureNames);
 		} catch (InvalidServerAddressException e) {
 			throw new ResourceInitializationException(e);
 		}
@@ -109,7 +112,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 		currentTypeSystem = ts;
 		TypeSystemDescription tsd = TypeSystemUtil.typeSystem2TypeSystemDescription(currentTypeSystem);
 		casAdapter = new ItemCASAdapter(tsd, baseUrl, false, true);
-		initFeatureMappings();
+		converter.setTypeSystem(currentTypeSystem);
 		try {
 			initTypeWhitelist();
 		} catch (MissingTypeNameException e) {
@@ -134,18 +137,6 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 		}
 	}
 
-	private void initFeatureMappings() {
-		for (String annTypeFN: annTypeFeatureNames) {
-			Feature feat = currentTypeSystem.getFeatureByFullName(annTypeFN);
-			if (feat != null)
-				annTypeFeatures.add(feat);
-		}
-		for (String labelFN: labelFeatureNames) {
-			Feature feat = currentTypeSystem.getFeatureByFullName(labelFN);
-			if (feat != null)
-				labelFeatures.add(feat);
-		}
-	}
 
 	@Override
 	public void process(CAS aCAS) throws AnalysisEngineProcessException {
@@ -171,7 +162,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 		FSIterator<AnnotationFS> oldAnnIter = casOfOrig.getAnnotationIndex().iterator(true);
 		while (oldAnnIter.hasNext()) {
 			AnnotationFS oldAnn = oldAnnIter.next();
-			oldAnns.add(convertToHCSvLab(oldAnn));
+			oldAnns.add(converter.convertToAlveo(oldAnn));
 		}
 
 		FSIterator<AnnotationFS> annIter = aCAS.getAnnotationIndex().iterator(true);
@@ -182,7 +173,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 				continue;
 			if (casOfOrig.getAnnotationIndex(ann.getType()).contains(ann))
 				continue; // annotation already existed in CAS - don't re-add
-			TextRestAnnotation asAlveoAnn = convertToHCSvLab(ann);
+			TextRestAnnotation asAlveoAnn = converter.convertToAlveo(ann);
 			if (oldAnns.contains(asAlveoAnn)) // already existed post-conversion
 				continue;
 			uploadable.add(asAlveoAnn);
@@ -205,46 +196,6 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 
 	private boolean isAnnTypeUploadable(AnnotationFS ann) {
 		return uploadableUimaTypes == null || uploadableUimaTypes.contains(ann.getType());
-	}
-
-	private TextRestAnnotation convertToHCSvLab(AnnotationFS ann) {
-		String annType = null;
-		Set<Feature> features = getKnownFeatures(ann);
-		for (Feature atf : annTypeFeatures) {
-//			try {
-//				annType = ann.getFeatureValueAsString(atf);
-//				break;
-//			} catch (CASRuntimeException e) {
-//			}
-			// not sure why the above doesn't work
-			if (features.contains(atf)) { // XXX - O(n)
-				annType = ann.getFeatureValueAsString(atf);
-				break;
-			}
-		}
-		if (annType == null) // haven't found anything - make en educated guess
-			annType = UIMAAlveoTypeMapping.getUriForTypeName(ann.getType().getName());
-		String label = ""; // don't guess for this one - just make it empty
-		for (Feature lf : labelFeatures) {
-			if (features.contains(lf)) { // XXX - O(n)
-				label = ann.getFeatureValueAsString(lf);
-				break;
-			}
-		}
-
-		return new TextRestAnnotation(annType, label, ann.getBegin(), ann.getEnd());
-	}
-
-	private Set<Feature> getKnownFeatures(AnnotationFS ann) {
-		// basic function to memoize feature sets
-		String annType = ann.getType().getName();
-		Set<Feature> knownFeatures = cachedFeatureSets.get(annType);
-		if (knownFeatures == null) {
-			knownFeatures = new TreeSet<Feature>();
-			knownFeatures.addAll(ann.getType().getFeatures());
-			cachedFeatureSets.put(annType, knownFeatures);
-		}
-		return knownFeatures;
 	}
 
 	private Item getOriginalFromAPI(CAS providedCas) throws UnauthorizedAPIKeyException, CASException {
