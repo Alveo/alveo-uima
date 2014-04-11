@@ -15,7 +15,6 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.cas.Type;
 import org.apache.uima.cas.TypeSystem;
 import org.apache.uima.cas.text.AnnotationFS;
-import org.apache.uima.resource.metadata.TypeDescription;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,11 +108,8 @@ class ItemCASAdapter {
 		Iterator<Type> types = typeSystem.getTypeIterator();
 		while (types.hasNext()) {
 			Type type = types.next();
-			TypeDescription td = tsd.getType(type.getName());
-			if (td == null)
-				continue;
-			// we have, somewhat dubiously, stored the annotation URI in the type description
-			urisToAnnTypes.put(td.getSourceUrlString(), type);
+			String typeURI = UIMAAlveoTypeMapping.getUriForTypeName(type.getName());
+			urisToAnnTypes.put(typeURI, type);
 		}
 	}
 

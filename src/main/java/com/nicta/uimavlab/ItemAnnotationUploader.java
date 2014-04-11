@@ -163,16 +163,25 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 
 		List<TextRestAnnotation> uploadable = new ArrayList<TextRestAnnotation>();
 
+		Set<TextRestAnnotation> oldAnns = new HashSet<TextRestAnnotation>();
+		FSIterator<AnnotationFS> oldAnnIter = casOfOrig.getAnnotationIndex().iterator(true);
+		while (oldAnnIter.hasNext()) {
+			AnnotationFS oldAnn = oldAnnIter.next();
+			oldAnns.add(convertToHCSvLab(oldAnn));
+		}
+
 		FSIterator<AnnotationFS> annIter = aCAS.getAnnotationIndex().iterator(true);
+
 		while (annIter.hasNext()) {
 			AnnotationFS ann = annIter.next();
-			boolean alreadyExists = casOfOrig.getAnnotationIndex(ann.getType()).contains(ann);
-			if (alreadyExists)
-				continue; // annotation already existed - don't re-add
-			if (uploadableUimaTypes != null
-					&& !uploadableUimaTypes.contains(ann.getType()))
-				continue; // not in whitelist
-			uploadable.add(convertToHCSvLab(ann));
+			if (!isAnnTypeUploadable(ann))
+				continue;
+			if (casOfOrig.getAnnotationIndex(ann.getType()).contains(ann))
+				continue; // annotation already existed in CAS - don't re-add
+			TextRestAnnotation asAlveoAnn = convertToHCSvLab(ann);
+			if (oldAnns.contains(asAlveoAnn)) // already existed post-conversion
+				continue;
+			uploadable.add(asAlveoAnn);
 		}
 
 
@@ -188,6 +197,10 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 				throw new AnalysisEngineProcessException(e);
 			}
 		}
+	}
+
+	private boolean isAnnTypeUploadable(AnnotationFS ann) {
+		return uploadableUimaTypes == null || uploadableUimaTypes.contains(ann.getType());
 	}
 
 	private TextRestAnnotation convertToHCSvLab(AnnotationFS ann) {
@@ -206,7 +219,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 			}
 		}
 		if (annType == null) // haven't found anything - make en educated guess
-			annType = mapTypeNameToURI(ann.getType().getName());
+			annType = UIMAAlveoTypeMapping.getUriForTypeName(ann.getType().getName());
 		String label = ""; // don't guess for this one - just make it empty
 		for (Feature lf : labelFeatures) {
 //			try {
@@ -221,24 +234,6 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 		}
 
 		return new TextRestAnnotation(annType, label, ann.getBegin(), ann.getEnd());
-	}
-
-	/** convert a java-style type name to a URI by
-	 * 	splitting on '.', reversing the order of all components but the last
-	 * 	and putting the last on the end after a '/'. This will be syntactically
-	 * 	valid even if the semantics is not ideal
-	 */
-	private String mapTypeNameToURI(String name) {
-		String[] comps = name.split("\\.");
-		StringBuilder sb = new StringBuilder("http://");
-		sb.append(comps[comps.length - 2]);
-		for (int i = comps.length - 3; i >= 0; i--) {
-			sb.append(".");
-			sb.append(comps[i]);
-		}
-		sb.append("/");
-		sb.append(comps[comps.length - 1]);
-		return sb.toString();
 	}
 
 	private Item getOriginalFromAPI(CAS providedCas) throws UnauthorizedAPIKeyException, CASException {
