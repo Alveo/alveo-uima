@@ -20,6 +20,7 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.descriptor.TypeCapability;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.ConfigurationParameterFactory;
+import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.apache.uima.util.Progress;
@@ -83,6 +84,11 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 
 
 	public static CollectionReaderDescription createDescription(Object... confData) throws ResourceInitializationException {
+		return createDescription(TypeSystemDescriptionFactory.createTypeSystemDescription(), confData);
+	}
+
+	public static CollectionReaderDescription createDescription(TypeSystemDescription externalTypeSystem, Object... confData)
+			throws ResourceInitializationException {
 		ConfigurationData confDataParsed = ConfigurationParameterFactory.createConfigurationData(confData);
 		String vlabUrl = null, vlabApiKey = null;
 		// since we don't yet have a reader, we need to semi-manually parse the params
@@ -99,7 +105,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 					new Object[] {PARAM_VLAB_API_KEY + ", " + PARAM_VLAB_BASE_URL + ", " + PARAM_VLAB_ITEM_LIST_ID});
 		TypeSystemDescription tsd;
 		try {
-			tsd = ItemListCollectionReader.getTypeSystemDescription(vlabUrl, vlabApiKey);
+			tsd = ItemListCollectionReader.getTypeSystemDescription(vlabUrl, vlabApiKey, externalTypeSystem);
 		} catch (Exception e) {
 			throw new ResourceInitializationException(e);
 		}
@@ -107,11 +113,12 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 				tsd, confData);
 	}
 
-	protected static TypeSystemDescription getTypeSystemDescription(String vlabUrl, String vlabApiKey)
+	protected static TypeSystemDescription getTypeSystemDescription(String vlabUrl, String vlabApiKey,
+			TypeSystemDescription extTypeSystem)
 			throws UnauthorizedAPIKeyException, EntityNotFoundException,
 			InvalidServerAddressException, ResourceInitializationException, URISyntaxException, OpenRDFException {
 		RestClient client = new RestClient(vlabUrl, vlabApiKey);
-		TypeSystemAutoGenerator tsag = new TypeSystemAutoGenerator(client);
+		TypeSystemAutoAugmenter tsag = new TypeSystemAutoAugmenter(client, extTypeSystem);
 		for (String corpusName : getCorpusNames())
 			tsag.addCorpus(corpusName);
 		return tsag.getTypeSystemDescription();
