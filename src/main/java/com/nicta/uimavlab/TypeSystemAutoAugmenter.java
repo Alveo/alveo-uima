@@ -35,17 +35,24 @@ import java.util.regex.Pattern;
  * <p/>
  * Used to map between annotation type URIs from from HCSvLab Annotations to UIMA types
  */
-public class TypeSystemAutoGenerator {
-	private static final Logger LOG = LoggerFactory.getLogger(TypeSystemAutoGenerator.class);
+public class TypeSystemAutoAugmenter {
+	private static final Logger LOG = LoggerFactory.getLogger(TypeSystemAutoAugmenter.class);
 	private RestClient restClient;
 	private final Set<String> knownCorpora = new HashSet<String>(20);
-	private Set<String> knownTypeNames = new HashSet<String>(40);
+	private Set<String> knownGeneratedTypeNames = new HashSet<String>(40);
+	private Set<String> knownExistingTypeNames = new HashSet<String>(40);
 
 	private final TypeSystemDescription tsd;
 
-	public TypeSystemAutoGenerator(RestClient rc) throws ResourceInitializationException {
+	public TypeSystemAutoAugmenter(RestClient rc) throws ResourceInitializationException {
+		this(rc, TypeSystemDescriptionFactory.createTypeSystemDescription());
+	}
+
+	public TypeSystemAutoAugmenter(RestClient rc, TypeSystemDescription extTypeSystem) {
 		restClient = rc;
-		tsd = TypeSystemDescriptionFactory.createTypeSystemDescription();
+		tsd = extTypeSystem;
+		for (TypeDescription td : tsd.getTypes())
+			knownExistingTypeNames.add(td.getName());
 	}
 
 
@@ -66,22 +73,40 @@ public class TypeSystemAutoGenerator {
 	}
 
 	private void insertType(String sourceUri) throws URISyntaxException {
-		String possTypeName = rawTypeNameForURI(sourceUri);
-		String actualTypeName;
-		if (knownTypeNames.contains(possTypeName)) {
-			while (true) {
-				int idx = 2;
-				actualTypeName = String.format("%s_%02d", possTypeName, idx);
-				if (!knownTypeNames.contains(possTypeName))
-					break;
-				idx++;
-			}
-		} else {
-			actualTypeName = possTypeName;
+		String possTypeName;
+		try {
+			possTypeName = rawTypeNameForURI(sourceUri);
+		} catch (URISyntaxException e) {
+			LOG.error("Invalid type URI: {}", sourceUri);
+			return;
 		}
-		TypeDescription td = tsd.addType(actualTypeName,
-				String.format("Automatically-generated type for URI %s", sourceUri),
-				"com.nicta.uimavlab.types.GeneratedItemAnnotation");
+		TypeDescription td;
+		if (knownExistingTypeNames.contains(possTypeName)) { // found a match in the existing URIs - assume it's the same class
+			td = tsd.getType(possTypeName);
+		} else {
+			String actualTypeName;
+			if (knownGeneratedTypeNames.contains(possTypeName)) { // duplicate type names generated.
+			// this de-duplication strategy may produce unexpected results when combined with the above, so
+			// hopefully it doesn't get used and all URLs map to unique types
+			// XXX - should demand that callers provide explicit mappings for duplicates this method creates
+				while (true) {
+					int idx = 2;
+					actualTypeName = String.format("%s_%02d", possTypeName, idx);
+					if (!knownGeneratedTypeNames.contains(possTypeName))
+						break;
+					idx++;
+				}
+				LOG.error("Found duplicate type names - URI {} maps to {} which already existed - replacing with {}." +
+								"This may produce unexpected results with type system inferencing when uploading" +
+								"annotations later",
+						sourceUri, possTypeName, actualTypeName);
+			} else {
+				actualTypeName = possTypeName;
+			}
+			td = tsd.addType(actualTypeName,
+					String.format("Automatically-generated type for URI %s", sourceUri),
+					"com.nicta.uimavlab.types.GeneratedItemAnnotation");
+		}
 		try {
 			td.setSourceUrl(new URL(sourceUri)); // not TOO much of hack
 			  // - this is supposed to be the URL the item was parsed from
@@ -91,7 +116,6 @@ public class TypeSystemAutoGenerator {
 		} catch (MalformedURLException e) {
 			throw new URISyntaxException("Error treating URI as URL: ", e.toString());
 		}
-//		urisToTypeNames.put(sourceUri, actualTypeName);
 	}
 
 	private void importTypesForCorpus(String corpusName) throws URISyntaxException,
@@ -121,6 +145,8 @@ public class TypeSystemAutoGenerator {
 	private static String rawTypeNameForURI(String typeURI) throws URISyntaxException {
 		URI uri = new URI(typeURI);
 		Stack<String> packageComps = new Stack<String>();
+		if (uri.getHost() == null)
+			throw new URISyntaxException(typeURI, "URI has no hostname component");
 		String[] origHostComps = uri.getHost().split("\\.");
 		// need to go from small-endian domain to big-endian
 		// like a java package name
