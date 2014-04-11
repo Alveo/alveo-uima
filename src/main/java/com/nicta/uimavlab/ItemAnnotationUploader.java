@@ -160,7 +160,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 		CAS casOfOrig;
 		try {
 			apiItem = getOriginalFromAPI(aCAS);
-//			casOfOrig = getCopyOfOriginalCAS(aCAS, apiItem);
+			casOfOrig = getCopyOfOriginalCAS(aCAS, apiItem);
 		} catch (CASException e) {
 			throw new AnalysisEngineProcessException(e);
 		} catch (UnauthorizedAPIKeyException e) {
@@ -172,8 +172,9 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 		FSIterator<AnnotationFS> annIter = aCAS.getAnnotationIndex().iterator(true);
 		while (annIter.hasNext()) {
 			AnnotationFS ann = annIter.next();
-//			if (casOfOrig.getAnnotationIndex().contains(ann))
-//				continue; // annotation already existed - don't re-add
+			boolean alreadyExists = casOfOrig.getAnnotationIndex(ann.getType()).contains(ann);
+			if (alreadyExists)
+				continue; // annotation already existed - don't re-add
 			if (uploadableUimaTypes != null
 					&& !uploadableUimaTypes.contains(ann.getType()))
 				continue; // not in whitelist
