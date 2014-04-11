@@ -32,15 +32,12 @@ class ItemCASAdapter {
 	private static final Logger LOG = LoggerFactory.getLogger(ItemCASAdapter.class);
 
 	private final boolean includeRawDocs;
-	private final TypeSystemDescription tsd;
 	private final boolean includeAnnotations;
 	private final String serverBaseUrl;
 	private Map<String, Type> urisToAnnTypes = new HashMap<String, Type>();
 
 
-	public ItemCASAdapter(TypeSystemDescription tsd, String serverBaseUrl,
-			boolean includeRawDocs, boolean includeAnnotations){
-		this.tsd = tsd;
+	public ItemCASAdapter(String serverBaseUrl, boolean includeRawDocs, boolean includeAnnotations){
 		this.serverBaseUrl = serverBaseUrl;
 		this.includeRawDocs = includeRawDocs;
 		this.includeAnnotations = includeAnnotations;

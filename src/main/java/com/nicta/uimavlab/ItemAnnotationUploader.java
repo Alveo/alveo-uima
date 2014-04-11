@@ -110,8 +110,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 		if (ts.equals(currentTypeSystem))
 			return;
 		currentTypeSystem = ts;
-		TypeSystemDescription tsd = TypeSystemUtil.typeSystem2TypeSystemDescription(currentTypeSystem);
-		casAdapter = new ItemCASAdapter(tsd, baseUrl, false, true);
+		casAdapter = new ItemCASAdapter(baseUrl, false, true);
 		converter.setTypeSystem(currentTypeSystem);
 		try {
 			initTypeWhitelist();

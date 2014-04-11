@@ -176,8 +176,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 		itemsIter = itemList.getCatalogItems().listIterator();
 		itemsFetched = 0;
 		totalItems = itemList.numItems();
-		itemCASAdapter = new ItemCASAdapter(getProcessingResourceMetaData().getTypeSystem(),
-				baseUrl, includeRawDocs, includeAnnotations);
+		itemCASAdapter = new ItemCASAdapter(baseUrl, includeRawDocs, includeAnnotations);
 	}
 
 	/*
