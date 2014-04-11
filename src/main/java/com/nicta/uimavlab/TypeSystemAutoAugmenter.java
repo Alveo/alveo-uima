@@ -91,15 +91,6 @@ public class TypeSystemAutoAugmenter {
 					String.format("Automatically-generated type for URI %s", sourceUri),
 					"com.nicta.uimavlab.types.GeneratedItemAnnotation");
 		}
-		try {
-			td.setSourceUrl(new URL(sourceUri)); // not TOO much of hack
-			  // - this is supposed to be the URL the item was parsed from
-			  // so it's sort of valid to put the URI in here
-			  // otherwise we're going to have to mess around with subclassing
-			  // TypeDescription to put in a custom field
-		} catch (MalformedURLException e) {
-			throw new URISyntaxException("Error treating URI as URL: ", e.toString());
-		}
 	}
 
 	private void importTypesForCorpus(String corpusName) throws URISyntaxException,
