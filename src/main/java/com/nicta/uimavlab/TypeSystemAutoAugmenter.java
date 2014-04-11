@@ -19,16 +19,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Stack;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by amack on 27/03/14.
@@ -73,37 +69,25 @@ public class TypeSystemAutoAugmenter {
 	}
 
 	private void insertType(String sourceUri) throws URISyntaxException {
-		String possTypeName;
+		String typeName;
 		try {
-			possTypeName = rawTypeNameForURI(sourceUri);
+			typeName = UIMAAlveoTypeMapping.getTypeNameForUri(sourceUri);
 		} catch (URISyntaxException e) {
 			LOG.error("Invalid type URI: {}", sourceUri);
 			return;
 		}
 		TypeDescription td;
-		if (knownExistingTypeNames.contains(possTypeName)) { // found a match in the existing URIs - assume it's the same class
-			td = tsd.getType(possTypeName);
+		if (knownExistingTypeNames.contains(typeName)) { // found a match in the existing URIs - assume it's the same class
+			td = tsd.getType(typeName);
 		} else {
-			String actualTypeName;
-			if (knownGeneratedTypeNames.contains(possTypeName)) { // duplicate type names generated.
-			// this de-duplication strategy may produce unexpected results when combined with the above, so
-			// hopefully it doesn't get used and all URLs map to unique types
+			if (knownGeneratedTypeNames.contains(typeName)) { // duplicate type names generated.
+			// hopefully this doesn't happen and all URLs map to unique types
 			// XXX - should demand that callers provide explicit mappings for duplicates this method creates
-				while (true) {
-					int idx = 2;
-					actualTypeName = String.format("%s_%02d", possTypeName, idx);
-					if (!knownGeneratedTypeNames.contains(possTypeName))
-						break;
-					idx++;
-				}
-				LOG.error("Found duplicate type names - URI {} maps to {} which already existed - replacing with {}." +
-								"This may produce unexpected results with type system inferencing when uploading" +
-								"annotations later",
-						sourceUri, possTypeName, actualTypeName);
-			} else {
-				actualTypeName = possTypeName;
+				LOG.error("Found duplicate type names - URI {} maps to {} which already existed; " +
+								"these types may be substituted for one another",
+						sourceUri, typeName);
 			}
-			td = tsd.addType(actualTypeName,
+			td = tsd.addType(typeName,
 					String.format("Automatically-generated type for URI %s", sourceUri),
 					"com.nicta.uimavlab.types.GeneratedItemAnnotation");
 		}
@@ -140,62 +124,6 @@ public class TypeSystemAutoAugmenter {
 			else
 				throw e;
 		}
-	}
-
-	private static String rawTypeNameForURI(String typeURI) throws URISyntaxException {
-		URI uri = new URI(typeURI);
-		Stack<String> packageComps = new Stack<String>();
-		if (uri.getHost() == null)
-			throw new URISyntaxException(typeURI, "URI has no hostname component");
-		String[] origHostComps = uri.getHost().split("\\.");
-		// need to go from small-endian domain to big-endian
-		// like a java package name
- 		for (int i = origHostComps.length - 1; i >= 0; i--)
-			packageComps.add(sanitizeLower(origHostComps[i])); // get rid of eg '-'
-		for (String pathComp : uri.getPath().split("/")) {
-			if (!pathComp.isEmpty())
-				packageComps.add(pathComp);
-		}
-		if (uri.getFragment() != null)
-			packageComps.add(uri.getFragment());
-		String typeName = sanitizeUpperCamel(packageComps.pop()); // last element is the name eg SpeakerAnnotation
-		StringBuffer fqTypeName = new StringBuffer();
-		for (String pc : packageComps) {
-			fqTypeName.append(sanitizeLower(pc));
-			fqTypeName.append(".");
-		}
-		fqTypeName.append(typeName);
-		return fqTypeName.toString();
-	}
-
-	private static String sanitizeLower(String source) {
-		/** Convert from a semi-arbitrary source string to a
-		 * string suitable for use in a Java/UIMA-friendly
-		 * fully qualified type name
-		 */
-		String charsStripped = source.replaceAll("\\W+", "");
-		return prefixNumerals(charsStripped);
-	}
-
-	private static String sanitizeUpperCamel(String source) {
-		/** Convert from a semi-arbitrary source string to a
-		 * Java/UIMA-friendly type name, camel-cased
-		 * like a conventional class by capitalizing
-		 * letters which occur after non-alphanumeric ones
-		 */
-		StringBuffer camelCased = new StringBuffer();
-		Matcher m = Pattern.compile("(?:^|\\W+)(\\w)?").matcher(source);
-		while (m.find())
-			m.appendReplacement(camelCased, m.group(1).toUpperCase());
-		m.appendTail(camelCased);
-		return prefixNumerals(camelCased.toString());
-	}
-
-	private static String prefixNumerals(String s) {
-		if (s.length() > 0 && Character.isDigit(s.codePointAt(0)))
-			return "N" + s;
-		else
-			return s;
 	}
 
 	private Collection<String> getTypeURIsForCorpus(String corpusName) throws QueryEvaluationException, MalformedQueryException, RepositoryException {
