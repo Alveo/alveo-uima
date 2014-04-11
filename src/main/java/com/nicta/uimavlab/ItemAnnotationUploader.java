@@ -29,9 +29,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Created by amack on 4/04/14.
@@ -87,6 +90,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 	private List<Feature> labelFeatures = new ArrayList<Feature>();
 	private TypeSystem currentTypeSystem = null;
 	private Set<Type> uploadableUimaTypes = null;
+	private Map<String, Set<Feature>> cachedFeatureSets = new HashMap<String, Set<Feature>>();
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
@@ -186,7 +190,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 
 
 		// if we don't upload in chunks we get a socket timeout
-		for (List<TextRestAnnotation> chunk : Lists.partition(uploadable, 50)) {
+		for (List<TextRestAnnotation> chunk : Lists.partition(uploadable, 100)) {
 			try {
 				apiItem.storeNewAnnotations(chunk);
 			} catch (EntityNotFoundException e) {
@@ -205,7 +209,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 
 	private TextRestAnnotation convertToHCSvLab(AnnotationFS ann) {
 		String annType = null;
-		List<Feature> features = ann.getType().getFeatures();
+		Set<Feature> features = getKnownFeatures(ann);
 		for (Feature atf : annTypeFeatures) {
 //			try {
 //				annType = ann.getFeatureValueAsString(atf);
@@ -222,11 +226,6 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 			annType = UIMAAlveoTypeMapping.getUriForTypeName(ann.getType().getName());
 		String label = ""; // don't guess for this one - just make it empty
 		for (Feature lf : labelFeatures) {
-//			try {
-//				label = ann.getFeatureValueAsString(lf);
-//				break;
-//			} catch (CASRuntimeException e) {
-//			}
 			if (features.contains(lf)) { // XXX - O(n)
 				label = ann.getFeatureValueAsString(lf);
 				break;
@@ -234,6 +233,18 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 		}
 
 		return new TextRestAnnotation(annType, label, ann.getBegin(), ann.getEnd());
+	}
+
+	private Set<Feature> getKnownFeatures(AnnotationFS ann) {
+		// basic function to memoize feature sets
+		String annType = ann.getType().getName();
+		Set<Feature> knownFeatures = cachedFeatureSets.get(annType);
+		if (knownFeatures == null) {
+			knownFeatures = new TreeSet<Feature>();
+			knownFeatures.addAll(ann.getType().getFeatures());
+			cachedFeatureSets.put(annType, knownFeatures);
+		}
+		return knownFeatures;
 	}
 
 	private Item getOriginalFromAPI(CAS providedCas) throws UnauthorizedAPIKeyException, CASException {
