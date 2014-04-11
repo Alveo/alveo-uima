@@ -104,8 +104,8 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 	}
 
 	private void initForTypeSystem(TypeSystem ts) throws AnalysisEngineProcessException {
-//		if (ts.equals(currentTypeSystem))
-//			return;
+		if (ts.equals(currentTypeSystem))
+			return;
 		currentTypeSystem = ts;
 		TypeSystemDescription tsd = TypeSystemUtil.typeSystem2TypeSystemDescription(currentTypeSystem);
 		casAdapter = new ItemCASAdapter(tsd, baseUrl, false, true);
