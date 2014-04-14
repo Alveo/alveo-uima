@@ -35,11 +35,12 @@ public class DefaultUIMAToAlveoAnnConverter implements UIMAToAlveoAnnConverter {
 	}
 
 	@Override
-	public void setTypeSystem(TypeSystem ts) throws AnalysisEngineProcessException {
+	public void setTypeSystem(TypeSystem ts) {
 		if (ts.equals(currentTypeSystem))
 			return;
 		currentTypeSystem = ts;
-		initFeatureMappings();
+		if (canConvertAnnotations())
+			initFeatureMappings();
 	}
 
 	private Map<String, Set<Feature>> cachedFeatureSets = new HashMap<String, Set<Feature>>();
@@ -71,7 +72,7 @@ public class DefaultUIMAToAlveoAnnConverter implements UIMAToAlveoAnnConverter {
 	}
 
 	public boolean canConvertAnnotations() {
-		return annTypeFeatures != null && labelFeatures != null;
+		return annTypeFeatureNames != null && labelFeatureNames != null;
 	}
 
 	@Override
