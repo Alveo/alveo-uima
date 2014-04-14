@@ -9,6 +9,7 @@ import com.nicta.vlabclient.UnsupportedLDSchemaException;
 import com.nicta.vlabclient.entity.Item;
 import com.nicta.vlabclient.entity.TextAnnotation;
 import com.nicta.vlabclient.entity.TextDocument;
+import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.ArrayFS;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
@@ -101,10 +102,11 @@ class ItemCASAdapter {
 		return type;
 	}
 
-	private void cacheAnnTypeUris(TypeSystem typeSystem) {
+	private void cacheAnnTypeUris(TypeSystem typeSystem)  {
 		// XXX: this assumes that all CASes have effectively the same type system.
 		// this will probably be true in practice generally, although
 		// we should maybe clear urisToAnnTypes for each new CAS just in case?
+		uimaToAlveoAnnConverter.setTypeSystem(typeSystem);
 		Iterator<Type> types = typeSystem.getTypeIterator();
 		while (types.hasNext()) {
 			Type type = types.next();
