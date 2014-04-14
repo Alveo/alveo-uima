@@ -182,6 +182,8 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 				oldAnns.add(converter.convertToAlveo(oldAnn));
 			} catch (UIMAToAlveoAnnConverter.NotInitializedException e) {
 				throw new AnalysisEngineProcessException(e);
+			} catch (UIMAToAlveoAnnConverter.InvalidAnnotationTypeException e) {
+				throw new AnalysisEngineProcessException(e);
 			}
 		}
 
@@ -197,6 +199,8 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 			try {
 				asAlveoAnn = converter.convertToAlveo(ann);
 			} catch (UIMAToAlveoAnnConverter.NotInitializedException e) {
+				throw new AnalysisEngineProcessException(e);
+			} catch (UIMAToAlveoAnnConverter.InvalidAnnotationTypeException e) {
 				throw new AnalysisEngineProcessException(e);
 			}
 			if (oldAnns.contains(asAlveoAnn)) // already existed post-conversion
@@ -229,7 +233,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 		return apiClient.getItemByUri(itemUri);
 	}
 
-	private CAS getCopyOfOriginalCAS(CAS updatedCAS, Item origItem) throws CASException {
+	private CAS getCopyOfOriginalCAS(CAS updatedCAS, Item origItem) throws CASException, AnalysisEngineProcessException {
 		CAS casForOrig = updatedCAS.createView("original");
 		casAdapter.storeItemInCas(origItem, casForOrig);
 		return casForOrig;
