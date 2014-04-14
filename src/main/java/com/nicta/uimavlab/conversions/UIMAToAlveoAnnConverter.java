@@ -9,9 +9,9 @@ import org.apache.uima.cas.text.AnnotationFS;
  * Created by amack on 11/04/14.
  */
 public interface UIMAToAlveoAnnConverter {
-	void setTypeSystem(TypeSystem ts) throws AnalysisEngineProcessException;
+	void setTypeSystem(TypeSystem ts);
 
-	public TextRestAnnotation convertToAlveo(AnnotationFS ann) throws NotInitializedException;
+	public TextRestAnnotation convertToAlveo(AnnotationFS ann) throws NotInitializedException, InvalidAnnotationTypeException;
 
 	public String getAlveoTypeUriForTypeName(String uimaTypeName);
 
@@ -22,6 +22,13 @@ public interface UIMAToAlveoAnnConverter {
 	 */
 	public class NotInitializedException extends Exception {
 		public NotInitializedException(String s) {
+			super(s);
+		}
+	}
+
+	public class InvalidAnnotationTypeException extends Exception {
+		public InvalidAnnotationTypeException(String s) {
+			super(s);
 		}
 	}
 }
