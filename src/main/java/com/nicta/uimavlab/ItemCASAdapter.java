@@ -1,5 +1,6 @@
 package com.nicta.uimavlab;
 
+import com.nicta.uimavlab.conversions.UIMAToAlveoAnnConverter;
 import com.nicta.uimavlab.types.ItemMetadata;
 import com.nicta.uimavlab.types.VLabDocSource;
 import com.nicta.uimavlab.types.VLabItemSource;
@@ -15,7 +16,6 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.cas.Type;
 import org.apache.uima.cas.TypeSystem;
 import org.apache.uima.cas.text.AnnotationFS;
-import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,12 +35,15 @@ class ItemCASAdapter {
 	private final boolean includeAnnotations;
 	private final String serverBaseUrl;
 	private Map<String, Type> urisToAnnTypes = new HashMap<String, Type>();
+	private final UIMAToAlveoAnnConverter uimaToAlveoAnnConverter;
 
 
-	public ItemCASAdapter(String serverBaseUrl, boolean includeRawDocs, boolean includeAnnotations){
+	public ItemCASAdapter(String serverBaseUrl, boolean includeRawDocs, boolean includeAnnotations,
+			UIMAToAlveoAnnConverter uimaToAlveoAnnConverter) {
 		this.serverBaseUrl = serverBaseUrl;
 		this.includeRawDocs = includeRawDocs;
 		this.includeAnnotations = includeAnnotations;
+		this.uimaToAlveoAnnConverter = uimaToAlveoAnnConverter;
 	}
 
 	public void storeItemInCas(Item item, CAS cas) throws CASException {
@@ -105,8 +108,7 @@ class ItemCASAdapter {
 		Iterator<Type> types = typeSystem.getTypeIterator();
 		while (types.hasNext()) {
 			Type type = types.next();
-			// START HERE - should maybe refactor to use UIMAToAlveoConverter instances
-			String typeURI = UIMAAlveoTypeMapping.getUriForTypeName(type.getName());
+			String typeURI = uimaToAlveoAnnConverter.getAlveoTypeUriForTypeName(type.getName());
 			urisToAnnTypes.put(typeURI, type);
 		}
 	}

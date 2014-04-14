@@ -1,13 +1,10 @@
 package com.nicta.uimavlab.conversions;
 
-import com.nicta.uimavlab.UIMAAlveoTypeMapping;
 import com.nicta.vlabclient.TextRestAnnotation;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.Feature;
 import org.apache.uima.cas.TypeSystem;
 import org.apache.uima.cas.text.AnnotationFS;
-import org.apache.uima.resource.metadata.TypeSystemDescription;
-import org.apache.uima.util.TypeSystemUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,16 +16,22 @@ import java.util.TreeSet;
 /**
  * Created by amack on 11/04/14.
  */
-public class DefaultUIMAToAlveoConverter implements UIMAToAlveoConverter {
+public class DefaultUIMAToAlveoAnnConverter implements UIMAToAlveoAnnConverter {
 	private final String[] annTypeFeatureNames;
 	private final String[] labelFeatureNames;
 	private TypeSystem currentTypeSystem;
-	private List<Feature> annTypeFeatures;
-	private List<Feature> labelFeatures;
+	private List<Feature> annTypeFeatures = new ArrayList<Feature>();
+	private List<Feature> labelFeatures = new ArrayList<Feature>();
 
-	public DefaultUIMAToAlveoConverter(String[] annTypeFeatureNames, String[] labelFeatureNames) {
+	public DefaultUIMAToAlveoAnnConverter(String[] annTypeFeatureNames, String[] labelFeatureNames) {
 		this.annTypeFeatureNames = annTypeFeatureNames;
 		this.labelFeatureNames = labelFeatureNames;
+	}
+
+	/** Initialize an instance which cannot convert types, but can convert URIs */
+	public DefaultUIMAToAlveoAnnConverter() {
+		this.annTypeFeatureNames = null;
+		this.labelFeatureNames = null;
 	}
 
 	@Override
@@ -66,37 +69,49 @@ public class DefaultUIMAToAlveoConverter implements UIMAToAlveoConverter {
 				labelFeatures.add(feat);
 		}
 	}
+
+	public boolean canConvertAnnotations() {
+		return annTypeFeatures != null && labelFeatures != null;
+	}
+
 	@Override
-	public TextRestAnnotation convertToAlveo(AnnotationFS ann) {
-			String annType = null;
-			Set<Feature> features = getKnownFeatures(ann);
-			for (Feature atf : annTypeFeatures) {
+	public boolean handlesTypeName(String uimaTypeName) {
+		return true; // default - handles all
+	}
+
+	@Override
+	public TextRestAnnotation convertToAlveo(AnnotationFS ann) throws NotInitializedException {
+		if (!canConvertAnnotations())
+			throw new NotInitializedException("This converter has not been initialized for full-scale type conversion");
+		String annType = null;
+		Set<Feature> features = getKnownFeatures(ann);
+		for (Feature atf : annTypeFeatures) {
 //			try {
 //				annType = ann.getFeatureValueAsString(atf);
 //				break;
 //			} catch (CASRuntimeException e) {
 //			}
-				// not sure why the above doesn't work
-				if (features.contains(atf)) { // XXX - O(n)
-					annType = ann.getFeatureValueAsString(atf);
-					break;
-				}
+			// not sure why the above doesn't work
+			if (features.contains(atf)) { // XXX - O(n)
+				annType = ann.getFeatureValueAsString(atf);
+				break;
 			}
-			if (annType == null) // haven't found anything - make en educated guess
-				annType = getAlveoTypeUriForTypeName(ann.getType().getName());
-			String label = ""; // don't guess for this one - just make it empty
-			for (Feature lf : labelFeatures) {
-				if (features.contains(lf)) { // XXX - O(n)
-					label = ann.getFeatureValueAsString(lf);
-					break;
-				}
+		}
+		if (annType == null) // haven't found anything - make en educated guess
+			annType = getAlveoTypeUriForTypeName(ann.getType().getName());
+		String label = ""; // don't guess for this one - just make it empty
+		for (Feature lf : labelFeatures) {
+			if (features.contains(lf)) { // XXX - O(n)
+				label = ann.getFeatureValueAsString(lf);
+				break;
 			}
+		}
 
-			return new TextRestAnnotation(annType, label, ann.getBegin(), ann.getEnd());
+		return new TextRestAnnotation(annType, label, ann.getBegin(), ann.getEnd());
 	}
 
 	@Override
 	public String getAlveoTypeUriForTypeName(String uimaTypeName) {
-		return UIMAAlveoTypeMapping.getUriForTypeName(uimaTypeName);
+		return UIMAAlveoTypeNameMapping.getUriForTypeName(uimaTypeName);
 	}
 }

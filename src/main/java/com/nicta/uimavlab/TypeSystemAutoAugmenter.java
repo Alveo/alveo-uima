@@ -1,5 +1,6 @@
 package com.nicta.uimavlab;
 
+import com.nicta.uimavlab.conversions.UIMAAlveoTypeNameMapping;
 import com.nicta.vlabclient.RestClient;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.resource.ResourceInitializationException;
@@ -18,9 +19,7 @@ import org.openrdf.repository.sparql.SPARQLRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -71,7 +70,7 @@ public class TypeSystemAutoAugmenter {
 	private void insertType(String sourceUri) throws URISyntaxException {
 		String typeName;
 		try {
-			typeName = UIMAAlveoTypeMapping.getTypeNameForUri(sourceUri);
+			typeName = UIMAAlveoTypeNameMapping.getTypeNameForUri(sourceUri);
 		} catch (URISyntaxException e) {
 			LOG.error("Invalid type URI: {}", sourceUri);
 			return;

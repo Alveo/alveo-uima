@@ -3,6 +3,9 @@
  */
 package com.nicta.uimavlab;
 
+import com.nicta.uimavlab.conversions.DefaultUIMAToAlveoAnnConverter;
+import com.nicta.uimavlab.conversions.FallingBackUIMAAlveoConverter;
+import com.nicta.uimavlab.conversions.UIMAToAlveoAnnConverter;
 import com.nicta.vlabclient.RestClient;
 import com.nicta.vlabclient.entity.EntityNotFoundException;
 import com.nicta.vlabclient.entity.HCSvLabException;
@@ -31,9 +34,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import static org.apache.uima.fit.factory.ConfigurationParameterFactory.ConfigurationData;
 
@@ -56,6 +61,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	public static final String PARAM_VLAB_API_KEY = "vLabApiKey";
 	public static final String PARAM_INCLUDE_RAW_DOCS = "includeRawDocs";
 	public static final String PARAM_INCLUDE_ANNOTATIONS = "includeAnnotations";
+	public static final String PARAM_ANNOTATION_CONVERTERS = "annotationConverters";
 
 	@ConfigurationParameter(name = PARAM_VLAB_ITEM_LIST_ID, mandatory = true, description = "Item ID which should be retrieved and converted into a "
 			+ "set of UIMA CAS documents")
@@ -76,11 +82,19 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	@ConfigurationParameter(name = PARAM_INCLUDE_ANNOTATIONS, mandatory = false, description = "Include textual annotations when they are present")
 	private boolean includeAnnotations = true;
 
+	@ConfigurationParameter(name = PARAM_ANNOTATION_CONVERTERS, mandatory = false,
+			description = "Classes for converting UIMA annotations into Alveo annotations in preference to" +
+					"the default strategy of looking for label or annotation type features with appropriate names " +
+					"or guessing the annotation type URI based on the source annotation type.")
+	private String[] annotationConverterClasses = new String[] {};
+
+
 	private ItemList itemList;
 	private Iterator<? extends Item> itemsIter;
 	private int itemsFetched;
 	private int totalItems;
 	private ItemCASAdapter itemCASAdapter;
+	private UIMAToAlveoAnnConverter converter;
 
 
 	public static CollectionReaderDescription createDescription(Object... confData) throws ResourceInitializationException {
@@ -160,10 +174,27 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		try {
+			List<UIMAToAlveoAnnConverter> componentConverters = new ArrayList<UIMAToAlveoAnnConverter>(annotationConverterClasses.length + 1);
+			for (String accName : annotationConverterClasses)
+				componentConverters.add(getConverterInstance(accName));
+			converter = FallingBackUIMAAlveoConverter.withDefault(componentConverters);
 			fetchItemList();
 		} catch (HCSvLabException e) {
 			throw new ResourceInitializationException(e);
+		} catch (ClassNotFoundException e) {
+			throw new ResourceInitializationException(e);
+		} catch (InstantiationException e) {
+			throw new ResourceInitializationException(e);
+		} catch (IllegalAccessException e) {
+			throw new ResourceInitializationException(e);
 		}
+	}
+
+
+	private UIMAToAlveoAnnConverter getConverterInstance(String className)
+			throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+		Class<?> convClass = Class.forName(className);
+		return (UIMAToAlveoAnnConverter) convClass.newInstance();
 	}
 
 	private void fetchItemList() throws HCSvLabException {
@@ -176,7 +207,8 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 		itemsIter = itemList.getCatalogItems().listIterator();
 		itemsFetched = 0;
 		totalItems = itemList.numItems();
-		itemCASAdapter = new ItemCASAdapter(baseUrl, includeRawDocs, includeAnnotations);
+		itemCASAdapter = new ItemCASAdapter(baseUrl, includeRawDocs, includeAnnotations,
+				converter);
 	}
 
 	/*

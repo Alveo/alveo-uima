@@ -1,8 +1,9 @@
 package com.nicta.uimavlab;
 
 import com.google.common.collect.Lists;
-import com.nicta.uimavlab.conversions.DefaultUIMAToAlveoConverter;
-import com.nicta.uimavlab.conversions.UIMAToAlveoConverter;
+import com.nicta.uimavlab.conversions.DefaultUIMAToAlveoAnnConverter;
+import com.nicta.uimavlab.conversions.FallingBackUIMAAlveoConverter;
+import com.nicta.uimavlab.conversions.UIMAToAlveoAnnConverter;
 import com.nicta.uimavlab.types.VLabItemSource;
 import com.nicta.vlabclient.RestClient;
 import com.nicta.vlabclient.TextRestAnnotation;
@@ -25,18 +26,13 @@ import org.apache.uima.fit.component.CasConsumer_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.resource.ResourceInitializationException;
-import org.apache.uima.resource.metadata.TypeSystemDescription;
-import org.apache.uima.util.TypeSystemUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Created by amack on 4/04/14.
@@ -49,6 +45,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 	public static final String PARAM_LABEL_FEATURE_NAMES = "labelFeatureNames";
 	public static final String PARAM_ANNTYPE_FEATURE_NAMES = "annTypeFeatureNames";
 	public static final String PARAM_UPLOADABLE_UIMA_TYPE_NAMES = "uploadableUimaTypeNames";
+	public static final String PARAM_ANNOTATION_CONVERTERS = "annotationConverters";
 
 	/** The default feature name which, if found, is used to set the type of an annotation */
 	public static final String DEFAULT_ANNTYPE_FEATURE = "com.nicta.uimavlab.types.ItemAnnotation:annType";
@@ -60,7 +57,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 			description = "Base URL for the HCS vLab REST/JSON API server "
 					+ "- eg http://vlab.example.org/ ; the URL for the item list "
 					+ " will be constructed by appending 'item_lists/{item_list_id}.json' to this URL")
-	private String baseUrl;
+	private String baseUrl; // XXX: type could be URL ?
 
 	@ConfigurationParameter(name = PARAM_VLAB_API_KEY, mandatory = true,
 			description = "API key for the vLab account (available from the web interface")
@@ -86,31 +83,51 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 					"or their subtypes, will be uploaded")
 	private String[] uploadableUimaTypeNames = null;
 
+	@ConfigurationParameter(name = PARAM_ANNOTATION_CONVERTERS, mandatory = false,
+			description = "Classes for converting UIMA annotations into Alveo annotations in preference to" +
+					"the default strategy of looking for label or annotation type features with appropriate names " +
+					"or guessing the annotation type URI based on the source annotation type.")
+	private String[] annotationConverterClasses = new String[] {};
+
 	private RestClient apiClient;
 	private ItemCASAdapter casAdapter;
 	private List<Feature> annTypeFeatures = new ArrayList<Feature>();
 	private List<Feature> labelFeatures = new ArrayList<Feature>();
 	private TypeSystem currentTypeSystem = null;
 	private Set<Type> uploadableUimaTypes = null;
-	private UIMAToAlveoConverter converter = null;
+	private UIMAToAlveoAnnConverter converter = null;
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		super.initialize(context);
 		try {
 			apiClient = new RestClient(baseUrl, apiKey);
-			converter = new DefaultUIMAToAlveoConverter(annTypeFeatureNames, labelFeatureNames);
+			List<UIMAToAlveoAnnConverter> componentConverters = new ArrayList<UIMAToAlveoAnnConverter>(annotationConverterClasses.length + 1);
+			for (String accName : annotationConverterClasses)
+				componentConverters.add(getConverterInstance(accName));
+			converter = FallingBackUIMAAlveoConverter.withDefault(componentConverters, annTypeFeatureNames, labelFeatureNames);
 		} catch (InvalidServerAddressException e) {
 			throw new ResourceInitializationException(e);
+		} catch (ClassNotFoundException e) {
+			throw new ResourceInitializationException(e);
+		} catch (InstantiationException e) {
+			throw new ResourceInitializationException(e);
+		} catch (IllegalAccessException e) {
+			throw new ResourceInitializationException(e);
 		}
+	}
 
+	private UIMAToAlveoAnnConverter getConverterInstance(String className)
+			throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+		Class<?> convClass = Class.forName(className);
+		return (UIMAToAlveoAnnConverter) convClass.newInstance();
 	}
 
 	private void initForTypeSystem(TypeSystem ts) throws AnalysisEngineProcessException {
 		if (ts.equals(currentTypeSystem))
 			return;
 		currentTypeSystem = ts;
-		casAdapter = new ItemCASAdapter(baseUrl, false, true);
+		casAdapter = new ItemCASAdapter(baseUrl, false, true, converter);
 		converter.setTypeSystem(currentTypeSystem);
 		try {
 			initTypeWhitelist();
@@ -161,7 +178,11 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 		FSIterator<AnnotationFS> oldAnnIter = casOfOrig.getAnnotationIndex().iterator(true);
 		while (oldAnnIter.hasNext()) {
 			AnnotationFS oldAnn = oldAnnIter.next();
-			oldAnns.add(converter.convertToAlveo(oldAnn));
+			try {
+				oldAnns.add(converter.convertToAlveo(oldAnn));
+			} catch (UIMAToAlveoAnnConverter.NotInitializedException e) {
+				throw new AnalysisEngineProcessException(e);
+			}
 		}
 
 		FSIterator<AnnotationFS> annIter = aCAS.getAnnotationIndex().iterator(true);
@@ -172,7 +193,12 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 				continue;
 			if (casOfOrig.getAnnotationIndex(ann.getType()).contains(ann))
 				continue; // annotation already existed in CAS - don't re-add
-			TextRestAnnotation asAlveoAnn = converter.convertToAlveo(ann);
+			TextRestAnnotation asAlveoAnn = null;
+			try {
+				asAlveoAnn = converter.convertToAlveo(ann);
+			} catch (UIMAToAlveoAnnConverter.NotInitializedException e) {
+				throw new AnalysisEngineProcessException(e);
+			}
 			if (oldAnns.contains(asAlveoAnn)) // already existed post-conversion
 				continue;
 			uploadable.add(asAlveoAnn);
@@ -180,7 +206,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 
 
 		// if we don't upload in chunks we get a socket timeout
-		for (List<TextRestAnnotation> chunk : Lists.partition(uploadable, 100)) {
+		for (List<TextRestAnnotation> chunk : Lists.partition(uploadable, 200)) {
 			try {
 				apiItem.storeNewAnnotations(chunk);
 			} catch (EntityNotFoundException e) {

@@ -1,4 +1,4 @@
-package com.nicta.uimavlab;
+package com.nicta.uimavlab.conversions;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 /**
  * Created by amack on 11/04/14.
  */
-public class UIMAAlveoTypeMapping {
+public class UIMAAlveoTypeNameMapping {
 	public static String getTypeNameForUri(String typeURI) throws URISyntaxException {
 		URI uri = new URI(typeURI);
 		Stack<String> packageComps = new Stack<String>();
@@ -52,7 +52,7 @@ public class UIMAAlveoTypeMapping {
 		 * letters which occur after non-alphanumeric ones
 		 */
 		StringBuffer camelCased = new StringBuffer();
-		Matcher m = Pattern.compile("(?:^|\\W+)(\\w)?").matcher(source);
+		Matcher m = Pattern.compile("(?:^|\\W+)(\\w)?").matcher(source); // separator should match underscores too
 		while (m.find())
 			m.appendReplacement(camelCased, m.group(1).toUpperCase());
 		m.appendTail(camelCased);
