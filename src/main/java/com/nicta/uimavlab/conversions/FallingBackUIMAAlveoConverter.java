@@ -24,13 +24,13 @@ public class FallingBackUIMAAlveoConverter implements UIMAToAlveoAnnConverter {
 	}
 
 	@Override
-	public void setTypeSystem(TypeSystem ts) throws AnalysisEngineProcessException {
+	public void setTypeSystem(TypeSystem ts) {
 		for (UIMAToAlveoAnnConverter conv : converters)
 			conv.setTypeSystem(ts);
 	}
 
 	@Override
-	public TextRestAnnotation convertToAlveo(AnnotationFS ann) throws NotInitializedException {
+	public TextRestAnnotation convertToAlveo(AnnotationFS ann) throws NotInitializedException, InvalidAnnotationTypeException {
 		String typeName = ann.getType().getName();
 		for (UIMAToAlveoAnnConverter conv : converters) {
 			if (conv.handlesTypeName(typeName))
@@ -50,6 +50,10 @@ public class FallingBackUIMAAlveoConverter implements UIMAToAlveoAnnConverter {
 
 	@Override
 	public boolean handlesTypeName(String uimaTypeName) {
+		for (UIMAToAlveoAnnConverter conv : converters) {
+			if (conv.handlesTypeName(uimaTypeName))
+				return true;
+		}
 		return false;
 	}
 
