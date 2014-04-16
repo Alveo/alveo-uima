@@ -18,10 +18,10 @@
 		</developer>
 	</developers>
 	<inceptionYear>2013</inceptionYear>
-	<name>uimavlab</name>
-	<description>UIMA components to read from the HCS vLab API and output in a UIMA format, and to translate
-    to read UIMA annotations then write them back to the vLab server</description>
-	<url>http://bitbucket.org/andymackinlay/uimavlab</url>
+	<name>Alveo UIMA Client</name>
+	<description>UIMA components to read from the Alveo API and output in a UIMA format, and to translate
+    to read UIMA annotations then write them back to the Alveo server</description>
+	<url>http://bitbucket.org/andymackinlay/alveo-uima</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
