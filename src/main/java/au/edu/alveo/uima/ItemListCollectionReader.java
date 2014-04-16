@@ -3,11 +3,11 @@
  */
 package au.edu.alveo.uima;
 
+import au.edu.alveo.client.entity.AlveoException;
 import au.edu.alveo.uima.conversions.FallingBackUIMAAlveoConverter;
 import au.edu.alveo.uima.conversions.UIMAToAlveoAnnConverter;
 import au.edu.alveo.client.RestClient;
 import au.edu.alveo.client.entity.EntityNotFoundException;
-import au.edu.alveo.client.entity.HCSvLabException;
 import au.edu.alveo.client.entity.InvalidServerAddressException;
 import au.edu.alveo.client.entity.Item;
 import au.edu.alveo.client.entity.ItemList;
@@ -179,7 +179,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 				componentConverters.add(getConverterInstance(accName));
 			converter = FallingBackUIMAAlveoConverter.withDefault(componentConverters);
 			fetchItemList();
-		} catch (HCSvLabException e) {
+		} catch (AlveoException e) {
 			throw new ResourceInitializationException(e);
 		} catch (ClassNotFoundException e) {
 			throw new ResourceInitializationException(e);
@@ -197,7 +197,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 		return (UIMAToAlveoAnnConverter) convClass.newInstance();
 	}
 
-	private void fetchItemList() throws HCSvLabException {
+	private void fetchItemList() throws AlveoException {
 		RestClient client = new RestClient(baseUrl.toString(), apiKey);
 		try {
 			itemList = client.getItemList(itemListId);
