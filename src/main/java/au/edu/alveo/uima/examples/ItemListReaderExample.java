@@ -69,9 +69,9 @@ public class ItemListReaderExample {
 			String descriptorDir)
 			throws UIMAException, IOException, SAXException {
 		CollectionReaderDescription reader = ItemListCollectionReader.createDescription(
-				ItemListCollectionReader.PARAM_VLAB_BASE_URL, serverUrl,
-				ItemListCollectionReader.PARAM_VLAB_API_KEY, apiKey,
-				ItemListCollectionReader.PARAM_VLAB_ITEM_LIST_ID, itemListId,
+				ItemListCollectionReader.PARAM_ALVEO_BASE_URL, serverUrl,
+				ItemListCollectionReader.PARAM_ALVEO_API_KEY, apiKey,
+				ItemListCollectionReader.PARAM_ALVEO_ITEM_LIST_ID, itemListId,
 				ItemListCollectionReader.PARAM_INCLUDE_RAW_DOCS, false);
 		AnalysisEngineDescription casWriter = AnalysisEngineFactory.createEngineDescription(
 				XmiWriterCasConsumer.class, XmiWriterCasConsumer.PARAM_OUTPUTDIR, xmiDir);

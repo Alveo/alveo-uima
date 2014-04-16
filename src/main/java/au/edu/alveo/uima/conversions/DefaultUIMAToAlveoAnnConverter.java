@@ -13,7 +13,17 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Created by amack on 11/04/14.
+ * The default converter for creating Alveo annotations from UIMA annotations.
+ *
+ * This is the fallback strategy in for converting. There are two important characteristics
+ * of the Alveo annotations which must be derived from UIMA -- the <code>type</code> (not the <code>@type</code>"),
+ * which is a URI, and the <code>label</code>, which is a free text string.
+ *
+ * The strategy employed by this converter is to first attempt to populate these values using
+ * features whose names match those supplied as the <code>annTypeFeatureNames</code> and
+ * <code>labelFeatureNames</code> arguments to the constructor. If these features are not found on the
+ * annotation, a fallback value is used. For the <code>type</code> URI, this is created by automatically
+ * converting the type name to a URI in a sensible way. For the label this is simply the empty string
  */
 public class DefaultUIMAToAlveoAnnConverter implements UIMAToAlveoAnnConverter {
 	private final String[] annTypeFeatureNames;
@@ -27,7 +37,11 @@ public class DefaultUIMAToAlveoAnnConverter implements UIMAToAlveoAnnConverter {
 		this.labelFeatureNames = labelFeatureNames;
 	}
 
-	/** Initialize an instance which cannot convert types, but can convert URIs */
+	/** Initialize an instance which cannot convert types, but can convert URIs.
+	 *
+	 * This is used when we are reading Alveo annotations and converting them to
+	 * UIMA, since it enables us to sensibly create a mapping between UIMA types
+	 * and Alveo type URIs */
 	public DefaultUIMAToAlveoAnnConverter() {
 		this.annTypeFeatureNames = null;
 		this.labelFeatureNames = null;

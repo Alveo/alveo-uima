@@ -60,8 +60,8 @@ public class WriteDynamicDescriptors {
 	private static void writeDescriptors(String serverUrl, String apiKey, String dirName)
 			throws ResourceInitializationException, IOException, SAXException {
 		CollectionReaderDescription reader = ItemListCollectionReader.createDescription(
-				ItemListCollectionReader.PARAM_VLAB_BASE_URL, serverUrl,
-				ItemListCollectionReader.PARAM_VLAB_API_KEY, apiKey);
+				ItemListCollectionReader.PARAM_ALVEO_BASE_URL, serverUrl,
+				ItemListCollectionReader.PARAM_ALVEO_API_KEY, apiKey);
 		File readerXML = new File(dirName, "ItemListCollectionReader.xml");
 		OutputStream readerOS = new BufferedOutputStream(new FileOutputStream(readerXML));
 		reader.toXML(readerOS);

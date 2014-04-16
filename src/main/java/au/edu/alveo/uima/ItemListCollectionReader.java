@@ -43,7 +43,8 @@ import java.util.List;
 import static org.apache.uima.fit.factory.ConfigurationParameterFactory.ConfigurationData;
 
 /**
- * @author amack
+ * A collection reader which automatically converts Alveo annotations into UIMA data structures
+ * so that they can be used by other UIMA processing components.
  * 
  */
 @TypeCapability(outputs = { 
@@ -56,24 +57,24 @@ import static org.apache.uima.fit.factory.ConfigurationParameterFactory.Configur
 public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	private static final Logger LOG = LoggerFactory.getLogger(ItemListCollectionReader.class);
 
-	public static final String PARAM_VLAB_BASE_URL = "vLabBaseUrl";
-	public static final String PARAM_VLAB_ITEM_LIST_ID = "ItemListId";
-	public static final String PARAM_VLAB_API_KEY = "vLabApiKey";
+	public static final String PARAM_ALVEO_BASE_URL = "alveoBaseUrl";
+	public static final String PARAM_ALVEO_ITEM_LIST_ID = "itemListId";
+	public static final String PARAM_ALVEO_API_KEY = "alveoApiKey";
 	public static final String PARAM_INCLUDE_RAW_DOCS = "includeRawDocs";
 	public static final String PARAM_INCLUDE_ANNOTATIONS = "includeAnnotations";
 	public static final String PARAM_ANNOTATION_CONVERTERS = "annotationConverters";
 
-	@ConfigurationParameter(name = PARAM_VLAB_ITEM_LIST_ID, mandatory = true, description = "Item ID which should be retrieved and converted into a "
+	@ConfigurationParameter(name = PARAM_ALVEO_ITEM_LIST_ID, mandatory = true, description = "Item ID which should be retrieved and converted into a "
 			+ "set of UIMA CAS documents")
 	private String itemListId;
 
-	@ConfigurationParameter(name = PARAM_VLAB_BASE_URL, mandatory = true, 
+	@ConfigurationParameter(name = PARAM_ALVEO_BASE_URL, mandatory = true,
 			description = "Base URL for the Alveo REST/JSON API server "
 			+ "- eg http://vlab.example.org/ ; the URL for the item list "
 			+ " will be constructed by appending 'item_lists/{item_list_id}.json' to this URL")
 	private URL baseUrl;
 
-	@ConfigurationParameter(name = PARAM_VLAB_API_KEY, mandatory = true, description = "API key for the vLab account (available from the web interface")
+	@ConfigurationParameter(name = PARAM_ALVEO_API_KEY, mandatory = true, description = "API key for the vLab account (available from the web interface")
 	private String apiKey;
 
 	@ConfigurationParameter(name = PARAM_INCLUDE_RAW_DOCS, mandatory = false, description = "Include raw document sources as separate SofAs")
@@ -97,10 +98,35 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	private UIMAToAlveoAnnConverter converter;
 
 
+	/** Create a collection reader description corresponding to the provided configuration data.
+	 *
+	 * This method should be used in preference to the standard instantiation methods because
+	 * the type system needs to be determined dynamically by querying the Alveo server for
+	 * known annotation types, and this factory method takes care of that.
+	 *
+	 * @param confData Any configuration data values in the standard UIMAfit format (interleaved keys and values)
+	 *                 as could be used in a call to
+	 *                 {@link org.apache.uima.fit.factory.ConfigurationParameterFactory#createConfigurationData(java.lang.Object...)}
+	 * @return a new <code>CollectionReaderDescription</code> instance suitable for using a pipeline directly
+	 *    or serializing to disk as XML
+	 * @throws ResourceInitializationException
+	 */
 	public static CollectionReaderDescription createDescription(Object... confData) throws ResourceInitializationException {
 		return createDescription(TypeSystemDescriptionFactory.createTypeSystemDescription(), confData);
 	}
 
+	/** Create a collection reader description corresponding to the provided configuration data.
+	 *
+	 * Similar to {@link #createDescription(java.lang.Object...)} except it will explicitly merge with
+	 * the supplied type system instead of generating one using UIMAfit
+	 *
+	 * @param externalTypeSystem An externally create type system which should be merged with the dynamic type
+	 *                           system from the server
+	 * @param confData Any configuration data values in the standard UIMAfit format
+	 * @return a new <code>CollectionReaderDescription</code> instance suitable for using a pipeline directly
+	 *    or serializing to disk as XML
+	 * @throws ResourceInitializationException
+	 */
 	public static CollectionReaderDescription createDescription(TypeSystemDescription externalTypeSystem, Object... confData)
 			throws ResourceInitializationException {
 		ConfigurationData confDataParsed = ConfigurationParameterFactory.createConfigurationData(confData);
@@ -109,14 +135,14 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 		for (int i = 0; i < confDataParsed.configurationParameters.length; i++) {
 			String paramName = confDataParsed.configurationParameters[i].getName();
 			Object value = confDataParsed.configurationValues[i];
-			if (paramName.equals(PARAM_VLAB_API_KEY))
+			if (paramName.equals(PARAM_ALVEO_API_KEY))
 				vlabApiKey = (String) value;
-			else if (paramName.equals(PARAM_VLAB_BASE_URL))
+			else if (paramName.equals(PARAM_ALVEO_BASE_URL))
 				vlabUrl = (String) value;
 		}
 		if (vlabApiKey == null || vlabUrl == null)
 			throw new ResourceInitializationException(ResourceInitializationException.CONFIG_SETTING_ABSENT,
-					new Object[] {PARAM_VLAB_API_KEY + ", " + PARAM_VLAB_BASE_URL + ", " + PARAM_VLAB_ITEM_LIST_ID});
+					new Object[] {PARAM_ALVEO_API_KEY + ", " + PARAM_ALVEO_BASE_URL + ", " + PARAM_ALVEO_ITEM_LIST_ID});
 		TypeSystemDescription tsd;
 		try {
 			tsd = ItemListCollectionReader.getTypeSystemDescription(vlabUrl, vlabApiKey, externalTypeSystem);

@@ -23,6 +23,7 @@ import org.apache.uima.cas.TypeSystem;
 import org.apache.uima.cas.text.AnnotationFS;
 import org.apache.uima.fit.component.CasConsumer_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
+import org.apache.uima.fit.descriptor.OperationalProperties;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.slf4j.Logger;
@@ -35,13 +36,18 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Created by amack on 4/04/14.
+ * A UIMA component which uploads annotations to the HCS vLab server.
+ *
+ * The UIMA annotations undergo a lossy conversion process to create Alveo annotations,
+ * and the annotations are then uploaded to the server if equivalent annotations
+ * (with the same type, label and span) are not found on the item already
  */
+@OperationalProperties(modifiesCas = false)
 public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 	private static final Logger LOG = LoggerFactory.getLogger(ItemAnnotationUploader.class);
 
-	public static final String PARAM_VLAB_BASE_URL = "vLabBaseUrl";
-	public static final String PARAM_VLAB_API_KEY = "vLabApiKey";
+	public static final String PARAM_ALVEO_BASE_URL = "alveoBaseUrl";
+	public static final String PARAM_ALVEO_API_KEY = "alveoApiKey";
 	public static final String PARAM_LABEL_FEATURE_NAMES = "labelFeatureNames";
 	public static final String PARAM_ANNTYPE_FEATURE_NAMES = "annTypeFeatureNames";
 	public static final String PARAM_UPLOADABLE_UIMA_TYPE_NAMES = "uploadableUimaTypeNames";
@@ -53,13 +59,13 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 	/** The default feature name which, if found, is used to set the label of an annotation */
 	public static final String DEFAULT_LABEL_FEATURE = "au.edu.alveo.uima.types.ItemAnnotation:label";
 
-	@ConfigurationParameter(name = PARAM_VLAB_BASE_URL, mandatory = true,
+	@ConfigurationParameter(name = PARAM_ALVEO_BASE_URL, mandatory = true,
 			description = "Base URL for the Alveo REST/JSON API server "
 					+ "- eg http://vlab.example.org/ ; the URL for the item list "
 					+ " will be constructed by appending 'item_lists/{item_list_id}.json' to this URL")
-	private URL baseUrl; // XXX: type could be URL ?
+	private URL baseUrl;
 
-	@ConfigurationParameter(name = PARAM_VLAB_API_KEY, mandatory = true,
+	@ConfigurationParameter(name = PARAM_ALVEO_API_KEY, mandatory = true,
 			description = "API key for the vLab account (available from the web interface")
 	private String apiKey;
 
