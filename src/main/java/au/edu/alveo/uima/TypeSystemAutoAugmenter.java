@@ -1,6 +1,6 @@
-package com.nicta.uimavlab;
+package au.edu.alveo.uima;
 
-import com.nicta.uimavlab.conversions.UIMAAlveoTypeNameMapping;
+import au.edu.alveo.uima.conversions.UIMAAlveoTypeNameMapping;
 import au.edu.alveo.client.RestClient;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.resource.ResourceInitializationException;
@@ -88,7 +88,7 @@ public class TypeSystemAutoAugmenter {
 			}
 			td = tsd.addType(typeName,
 					String.format("Automatically-generated type for URI %s", sourceUri),
-					"com.nicta.uimavlab.types.GeneratedItemAnnotation");
+					"au.edu.alveo.uima.types.GeneratedItemAnnotation");
 		}
 	}
 

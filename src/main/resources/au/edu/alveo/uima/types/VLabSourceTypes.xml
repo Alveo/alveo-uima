@@ -6,7 +6,7 @@
   <vendor>com.nicta</vendor>
   <types>
     <typeDescription>
-      <name>com.nicta.uimavlab.types.VLabRestInstance</name>
+      <name>au.edu.alveo.uima.types.VLabRestInstance</name>
       <description>Stores information about what the REST data source was on an HCS vLab server</description>
       <supertypeName>uima.tcas.DocumentAnnotation</supertypeName>
       <features>
@@ -18,9 +18,9 @@
       </features>
     </typeDescription>
     <typeDescription>
-      <name>com.nicta.uimavlab.types.VLabItemSource</name>
+      <name>au.edu.alveo.uima.types.VLabItemSource</name>
       <description>Stores information about where an item was retrieved from in the HCS vLab REST API</description>
-      <supertypeName>com.nicta.uimavlab.types.VLabRestInstance</supertypeName>
+      <supertypeName>au.edu.alveo.uima.types.VLabRestInstance</supertypeName>
       <features>
         <featureDescription>
           <name>sourceUri</name>
@@ -35,21 +35,21 @@
         <featureDescription>
           <name>metadata</name>
           <description>Metadata associated with the item</description>
-          <rangeTypeName>com.nicta.uimavlab.types.ItemMetadata</rangeTypeName>
+          <rangeTypeName>au.edu.alveo.uima.types.ItemMetadata</rangeTypeName>
         </featureDescription>
         <featureDescription>
           <name>annotations</name>
           <description>The textual annotations associated with the document</description>
           <rangeTypeName>uima.cas.FSArray</rangeTypeName>
-          <elementType>com.nicta.uimavlab.types.ItemAnnotation</elementType>
+          <elementType>au.edu.alveo.uima.types.ItemAnnotation</elementType>
           <multipleReferencesAllowed>false</multipleReferencesAllowed>
         </featureDescription>
       </features>
     </typeDescription>
     <typeDescription>
-      <name>com.nicta.uimavlab.types.VLabDocSource</name>
+      <name>au.edu.alveo.uima.types.VLabDocSource</name>
       <description>Stores information about where an document (source of an item) was retrieved from in the HCS vLab REST API</description>
-      <supertypeName>com.nicta.uimavlab.types.VLabRestInstance</supertypeName>
+      <supertypeName>au.edu.alveo.uima.types.VLabRestInstance</supertypeName>
       <features>
         <featureDescription>
           <name>rawTextUrl</name>
@@ -64,7 +64,7 @@
       </features>
     </typeDescription>
     <typeDescription>
-      <name>com.nicta.uimavlab.types.ItemMetadata</name>
+      <name>au.edu.alveo.uima.types.ItemMetadata</name>
       <description>Metadata associated with an item</description>
       <supertypeName>uima.tcas.DocumentAnnotation</supertypeName>
       <features>
@@ -106,7 +106,7 @@
       </features>
     </typeDescription>
     <typeDescription>
-      <name>com.nicta.uimavlab.types.ItemAnnotation</name>
+      <name>au.edu.alveo.uima.types.ItemAnnotation</name>
       <description/>
       <supertypeName>uima.tcas.Annotation</supertypeName>
       <features>
@@ -123,14 +123,14 @@
       </features>
     </typeDescription>
 		<typeDescription>
-			<name>com.nicta.uimavlab.types.GeneratedItemAnnotation</name>
+			<name>au.edu.alveo.uima.types.GeneratedItemAnnotation</name>
 			<description>Annotation type which is generated to conform to the set of known types in a corpus.</description>
-			<supertypeName>com.nicta.uimavlab.types.ItemAnnotation</supertypeName>
+			<supertypeName>au.edu.alveo.uima.types.ItemAnnotation</supertypeName>
 		</typeDescription>
     <typeDescription>
-      <name>com.nicta.uimavlab.types.UnknownItemAnnotation</name>
+      <name>au.edu.alveo.uima.types.UnknownItemAnnotation</name>
       <description>Type for annotations where annType does not correspond to a known type.</description>
-      <supertypeName>com.nicta.uimavlab.types.ItemAnnotation</supertypeName>
+      <supertypeName>au.edu.alveo.uima.types.ItemAnnotation</supertypeName>
     </typeDescription>
   </types>
 </typeSystemDescription>

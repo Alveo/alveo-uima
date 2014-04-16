@@ -1,4 +1,4 @@
-package com.nicta.uimavlab.examples;
+package au.edu.alveo.uima.examples;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -25,8 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.uima.UIMAFramework;
@@ -35,10 +33,8 @@ import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
 import org.apache.uima.cas.CASRuntimeException;
-import org.apache.uima.cas.FSIterator;
 import org.apache.uima.cas.impl.XmiCasSerializer;
 import org.apache.uima.collection.CasConsumerDescription;
-import org.apache.uima.examples.SourceDocumentInformation;
 import org.apache.uima.fit.component.CasConsumer_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
@@ -46,7 +42,6 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.ResourceProcessException;
 import org.apache.uima.util.InvalidXMLException;
 import org.apache.uima.util.TypeSystemUtil;
-import org.apache.uima.util.UriUtils;
 import org.apache.uima.util.XMLInputSource;
 import org.apache.uima.util.XMLSerializer;
 import org.xml.sax.SAXException;

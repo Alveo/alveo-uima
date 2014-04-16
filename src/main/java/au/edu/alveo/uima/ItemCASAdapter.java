@@ -1,9 +1,9 @@
-package com.nicta.uimavlab;
+package au.edu.alveo.uima;
 
-import com.nicta.uimavlab.conversions.UIMAToAlveoAnnConverter;
-import com.nicta.uimavlab.types.ItemMetadata;
-import com.nicta.uimavlab.types.VLabDocSource;
-import com.nicta.uimavlab.types.VLabItemSource;
+import au.edu.alveo.uima.conversions.UIMAToAlveoAnnConverter;
+import au.edu.alveo.uima.types.ItemMetadata;
+import au.edu.alveo.uima.types.VLabDocSource;
+import au.edu.alveo.uima.types.VLabItemSource;
 import au.edu.alveo.client.UnknownValueException;
 import au.edu.alveo.client.UnsupportedLDSchemaException;
 import au.edu.alveo.client.entity.Item;
@@ -74,8 +74,8 @@ class ItemCASAdapter {
 		CAS cas = vlabItemSrc.getCAS();
 		TypeSystem ts = cas.getTypeSystem();
 		ArrayFS fsForAnns = cas.createArrayFS(anns.size());
-		Feature annTypeFeature = ts.getFeatureByFullName("com.nicta.uimavlab.types.ItemAnnotation:annType");
-		Feature labelFeature = ts.getFeatureByFullName("com.nicta.uimavlab.types.ItemAnnotation:label");
+		Feature annTypeFeature = ts.getFeatureByFullName("au.edu.alveo.uima.types.ItemAnnotation:annType");
+		Feature labelFeature = ts.getFeatureByFullName("au.edu.alveo.uima.types.ItemAnnotation:label");
 
 		for (TextAnnotation ta : anns) {
 			Type type = getTypeForAnnotation(ts, ta.getType());
@@ -85,7 +85,7 @@ class ItemCASAdapter {
 			cas.addFsToIndexes(afs);
 			fsForAnns.set(ctr++, afs);
 		}
-		vlabItemSrc.setFeatureValue(ts.getFeatureByFullName("com.nicta.uimavlab.types.VLabItemSource:annotations"),
+		vlabItemSrc.setFeatureValue(ts.getFeatureByFullName("au.edu.alveo.uima.types.VLabItemSource:annotations"),
 				fsForAnns);
 		cas.addFsToIndexes(fsForAnns);
 	}
@@ -96,7 +96,7 @@ class ItemCASAdapter {
 		Type type = urisToAnnTypes.get(annTypeUri);
 		if (type == null) {
 			LOG.error("Unknown annotation type URI: {}", annTypeUri);
-			type = typeSystem.getType("com.nicta.uimavlab.types.UnknownItemAnnotation");
+			type = typeSystem.getType("au.edu.alveo.uima.types.UnknownItemAnnotation");
 		}
 		return type;
 	}
@@ -151,7 +151,7 @@ class ItemCASAdapter {
 		metadata.setDiscourseType(orig.get("http://www.language-archives.org/OLAC/1.1/discourse_type"));
 		metadata.setRecordingDate(orig.get("http://www.language-archives.org/OLAC/1.1/recordingdate"));
 		Feature metadataFeature = vlabItemSrc.getCAS().getTypeSystem().getFeatureByFullName(
-				"com.nicta.uimavlab.types.VLabItemSource:metadata");
+				"au.edu.alveo.uima.types.VLabItemSource:metadata");
 		vlabItemSrc.setFeatureValue(metadataFeature, metadata);
 		vlabItemSrc.getCAS().setDocumentLanguage(orig.get("http://www.language-archives.org/OLAC/1.1/language").substring(0, 2));
 	}

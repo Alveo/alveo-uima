@@ -1,4 +1,4 @@
-package com.nicta.uimavlab.conversions;
+package au.edu.alveo.uima.conversions;
 
 import java.net.URI;
 import java.net.URISyntaxException;

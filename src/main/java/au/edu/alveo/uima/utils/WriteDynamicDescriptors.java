@@ -1,19 +1,17 @@
-package com.nicta.uimavlab.utils;
+package au.edu.alveo.uima.utils;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import com.nicta.uimavlab.ItemListCollectionReader;
+import au.edu.alveo.uima.ItemListCollectionReader;
 import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.xml.sax.SAXException;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
 
 /**
  * Created by amack on 7/04/14.

@@ -1,9 +1,9 @@
-package com.nicta.uimavlab;
+package au.edu.alveo.uima;
 
 import com.google.common.collect.Lists;
-import com.nicta.uimavlab.conversions.FallingBackUIMAAlveoConverter;
-import com.nicta.uimavlab.conversions.UIMAToAlveoAnnConverter;
-import com.nicta.uimavlab.types.VLabItemSource;
+import au.edu.alveo.uima.conversions.FallingBackUIMAAlveoConverter;
+import au.edu.alveo.uima.conversions.UIMAToAlveoAnnConverter;
+import au.edu.alveo.uima.types.VLabItemSource;
 import au.edu.alveo.client.RestClient;
 import au.edu.alveo.client.TextRestAnnotation;
 import au.edu.alveo.client.entity.EntityNotFoundException;
@@ -48,10 +48,10 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 	public static final String PARAM_ANNOTATION_CONVERTERS = "annotationConverters";
 
 	/** The default feature name which, if found, is used to set the type of an annotation */
-	public static final String DEFAULT_ANNTYPE_FEATURE = "com.nicta.uimavlab.types.ItemAnnotation:annType";
+	public static final String DEFAULT_ANNTYPE_FEATURE = "au.edu.alveo.uima.types.ItemAnnotation:annType";
 
 	/** The default feature name which, if found, is used to set the label of an annotation */
-	public static final String DEFAULT_LABEL_FEATURE = "com.nicta.uimavlab.types.ItemAnnotation:label";
+	public static final String DEFAULT_LABEL_FEATURE = "au.edu.alveo.uima.types.ItemAnnotation:label";
 
 	@ConfigurationParameter(name = PARAM_VLAB_BASE_URL, mandatory = true,
 			description = "Base URL for the HCS vLab REST/JSON API server "
@@ -66,14 +66,14 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 	@ConfigurationParameter(name = PARAM_LABEL_FEATURE_NAMES, mandatory = false,
 			description = "Fully-qualified feature names on UIMA annotations, the values of which will be mapped to " +
 					"labels in HCS vLab (first match will be used); " +
-					"the default entry is 'com.nicta.uimavlab.types.ItemAnnotation:label' " +
+					"the default entry is 'au.edu.alveo.uima.types.ItemAnnotation:label' " +
 					"which you probably want to include if you set this parameter")
 	private String[] labelFeatureNames = new String[] { DEFAULT_LABEL_FEATURE };
 
 	@ConfigurationParameter(name = PARAM_ANNTYPE_FEATURE_NAMES, mandatory = false,
 			description = "Fully-qualified feature names on UIMA annotations, the values of which will be mapped to " +
 					"annotation type URIs in HCS vLab (using the first match after processing the list in order); " +
-					"The default entry is 'com.nicta.uimavlab.types.ItemAnnotation:annType' " +
+					"The default entry is 'au.edu.alveo.uima.types.ItemAnnotation:annType' " +
 					"which you almost certainly want to include if you set this parameter. If no match is found " +
 					"in this list a type URI is automatically created from the qualified type name")
 	private String[] annTypeFeatureNames = new String[] { DEFAULT_ANNTYPE_FEATURE };

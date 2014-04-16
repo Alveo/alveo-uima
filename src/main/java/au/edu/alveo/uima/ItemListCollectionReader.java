@@ -1,10 +1,10 @@
 /**
  * 
  */
-package com.nicta.uimavlab;
+package au.edu.alveo.uima;
 
-import com.nicta.uimavlab.conversions.FallingBackUIMAAlveoConverter;
-import com.nicta.uimavlab.conversions.UIMAToAlveoAnnConverter;
+import au.edu.alveo.uima.conversions.FallingBackUIMAAlveoConverter;
+import au.edu.alveo.uima.conversions.UIMAToAlveoAnnConverter;
 import au.edu.alveo.client.RestClient;
 import au.edu.alveo.client.entity.EntityNotFoundException;
 import au.edu.alveo.client.entity.HCSvLabException;
@@ -47,11 +47,11 @@ import static org.apache.uima.fit.factory.ConfigurationParameterFactory.Configur
  * 
  */
 @TypeCapability(outputs = { 
-		"com.nicta.uimavlab.types.VLabItemSource",
-		"com.nicta.uimavlab.types.VLabDocSource",
-		"com.nicta.uimavlab.types.UnknownItemAnnotation",
-		"com.nicta.uimavlab.types.GeneratedItemAnnotation",
-		"com.nicta.uimavlab.types.ItemMetadata"
+		"au.edu.alveo.uima.types.VLabItemSource",
+		"au.edu.alveo.uima.types.VLabDocSource",
+		"au.edu.alveo.uima.types.UnknownItemAnnotation",
+		"au.edu.alveo.uima.types.GeneratedItemAnnotation",
+		"au.edu.alveo.uima.types.ItemMetadata"
 })
 public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	private static final Logger LOG = LoggerFactory.getLogger(ItemListCollectionReader.class);

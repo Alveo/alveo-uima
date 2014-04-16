@@ -1,8 +1,8 @@
-package com.nicta.uimavlab.examples;
+package au.edu.alveo.uima.examples;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import com.nicta.uimavlab.ItemListCollectionReader;
+import au.edu.alveo.uima.ItemListCollectionReader;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionReaderDescription;

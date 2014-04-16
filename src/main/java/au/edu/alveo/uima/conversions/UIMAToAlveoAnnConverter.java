@@ -1,4 +1,4 @@
-package com.nicta.uimavlab.conversions;
+package au.edu.alveo.uima.conversions;
 
 import au.edu.alveo.client.TextRestAnnotation;
 import org.apache.uima.cas.TypeSystem;
