@@ -1,7 +1,7 @@
 package com.nicta.uimavlab;
 
 import com.nicta.uimavlab.conversions.UIMAAlveoTypeNameMapping;
-import com.nicta.vlabclient.RestClient;
+import au.edu.alveo.client.RestClient;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeDescription;

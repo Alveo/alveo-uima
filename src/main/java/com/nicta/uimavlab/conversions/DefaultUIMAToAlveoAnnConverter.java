@@ -1,6 +1,6 @@
 package com.nicta.uimavlab.conversions;
 
-import com.nicta.vlabclient.TextRestAnnotation;
+import au.edu.alveo.client.TextRestAnnotation;
 import org.apache.uima.cas.Feature;
 import org.apache.uima.cas.TypeSystem;
 import org.apache.uima.cas.text.AnnotationFS;
