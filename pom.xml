@@ -40,9 +40,9 @@
 			<version>2.0.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.nicta</groupId>
-			<artifactId>vlabclient</artifactId>
-			<version>0.6.0-SNAPSHOT</version>
+			<groupId>au.edu.alveo</groupId>
+			<artifactId>alveo-rest-client</artifactId>
+			<version>0.7.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.uima</groupId>
