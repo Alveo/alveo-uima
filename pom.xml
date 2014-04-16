@@ -70,6 +70,12 @@
 			<version>r03</version>
 		</dependency>
 	</dependencies>
+	<repositories>
+		<repository> <!-- needed for Sesame 2.8.0-beta2-SNAPSHOT -->
+			<id>sonatype-staging</id>
+			<url>https://oss.sonatype.org/content/repositories/staging/</url>
+		</repository>
+	</repositories>
 	<build>
 		<plugins>
 			<plugin>
@@ -106,7 +112,7 @@
 							<!-- REQUIRED -->
 							<typeSystemIncludes>
 								<!-- one or more ant-like file patterns identifying top level descriptors -->
-								<typeSystemInclude>src/main/resources/au/edu/alveo/uima/types/VLabSourceTypes.xml</typeSystemInclude>
+								<typeSystemInclude>src/main/resources/au/edu/alveo/uima/types/*.xml</typeSystemInclude>
 							</typeSystemIncludes>
 
 							<!-- OPTIONAL -->
