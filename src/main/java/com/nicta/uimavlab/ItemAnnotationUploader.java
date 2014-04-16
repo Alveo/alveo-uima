@@ -1,7 +1,6 @@
 package com.nicta.uimavlab;
 
 import com.google.common.collect.Lists;
-import com.nicta.uimavlab.conversions.DefaultUIMAToAlveoAnnConverter;
 import com.nicta.uimavlab.conversions.FallingBackUIMAAlveoConverter;
 import com.nicta.uimavlab.conversions.UIMAToAlveoAnnConverter;
 import com.nicta.uimavlab.types.VLabItemSource;

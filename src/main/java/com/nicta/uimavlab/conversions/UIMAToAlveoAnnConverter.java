@@ -1,7 +1,6 @@
 package com.nicta.uimavlab.conversions;
 
 import com.nicta.vlabclient.TextRestAnnotation;
-import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.TypeSystem;
 import org.apache.uima.cas.text.AnnotationFS;
 

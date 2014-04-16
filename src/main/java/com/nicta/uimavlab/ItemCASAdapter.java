@@ -9,7 +9,6 @@ import com.nicta.vlabclient.UnsupportedLDSchemaException;
 import com.nicta.vlabclient.entity.Item;
 import com.nicta.vlabclient.entity.TextAnnotation;
 import com.nicta.vlabclient.entity.TextDocument;
-import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.ArrayFS;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
