@@ -28,6 +28,7 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -56,7 +57,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 			description = "Base URL for the HCS vLab REST/JSON API server "
 					+ "- eg http://vlab.example.org/ ; the URL for the item list "
 					+ " will be constructed by appending 'item_lists/{item_list_id}.json' to this URL")
-	private String baseUrl; // XXX: type could be URL ?
+	private URL baseUrl; // XXX: type could be URL ?
 
 	@ConfigurationParameter(name = PARAM_VLAB_API_KEY, mandatory = true,
 			description = "API key for the vLab account (available from the web interface")
@@ -100,7 +101,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		super.initialize(context);
 		try {
-			apiClient = new RestClient(baseUrl, apiKey);
+			apiClient = new RestClient(baseUrl.toString(), apiKey);
 			List<UIMAToAlveoAnnConverter> componentConverters = new ArrayList<UIMAToAlveoAnnConverter>(annotationConverterClasses.length + 1);
 			for (String accName : annotationConverterClasses)
 				componentConverters.add(getConverterInstance(accName));
@@ -126,7 +127,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 		if (ts.equals(currentTypeSystem))
 			return;
 		currentTypeSystem = ts;
-		casAdapter = new ItemCASAdapter(baseUrl, false, true, converter);
+		casAdapter = new ItemCASAdapter(baseUrl.toString(), false, true, converter);
 		converter.setTypeSystem(currentTypeSystem);
 		try {
 			initTypeWhitelist();

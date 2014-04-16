@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -70,7 +71,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 			description = "Base URL for the HCS vLab REST/JSON API server "
 			+ "- eg http://vlab.example.org/ ; the URL for the item list "
 			+ " will be constructed by appending 'item_lists/{item_list_id}.json' to this URL")
-	private String baseUrl;
+	private URL baseUrl;
 
 	@ConfigurationParameter(name = PARAM_VLAB_API_KEY, mandatory = true, description = "API key for the vLab account (available from the web interface")
 	private String apiKey;
@@ -197,7 +198,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	}
 
 	private void fetchItemList() throws HCSvLabException {
-		RestClient client = new RestClient(baseUrl, apiKey);
+		RestClient client = new RestClient(baseUrl.toString(), apiKey);
 		try {
 			itemList = client.getItemList(itemListId);
 		} catch (Exception e) {
@@ -206,7 +207,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 		itemsIter = itemList.getCatalogItems().listIterator();
 		itemsFetched = 0;
 		totalItems = itemList.numItems();
-		itemCASAdapter = new ItemCASAdapter(baseUrl, includeRawDocs, includeAnnotations,
+		itemCASAdapter = new ItemCASAdapter(baseUrl.toString(), includeRawDocs, includeAnnotations,
 				converter);
 	}
 
