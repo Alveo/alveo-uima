@@ -7,29 +7,29 @@
   <types>
     <typeDescription>
       <name>au.edu.alveo.uima.types.VLabRestInstance</name>
-      <description>Stores information about what the REST data source was on an HCS vLab server</description>
+      <description>Stores information about what the REST data source was on an Alveo server</description>
       <supertypeName>uima.tcas.DocumentAnnotation</supertypeName>
       <features>
         <featureDescription>
           <name>serverBase</name>
-          <description>Base URI for the HCS vLab server REST API</description>
+          <description>Base URI for the Alveo server REST API</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
       </features>
     </typeDescription>
     <typeDescription>
       <name>au.edu.alveo.uima.types.VLabItemSource</name>
-      <description>Stores information about where an item was retrieved from in the HCS vLab REST API</description>
+      <description>Stores information about where an item was retrieved from in the Alveo REST API</description>
       <supertypeName>au.edu.alveo.uima.types.VLabRestInstance</supertypeName>
       <features>
         <featureDescription>
           <name>sourceUri</name>
-          <description>URI in the HCS vLab REST API which was used to retrieve the document</description>
+          <description>URI in the Alveo REST API which was used to retrieve the document</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
         <featureDescription>
           <name>itemId</name>
-          <description>ID of the item on the HCS vLab server</description>
+          <description>ID of the item on the Alveo server</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
         <featureDescription>
@@ -48,17 +48,17 @@
     </typeDescription>
     <typeDescription>
       <name>au.edu.alveo.uima.types.VLabDocSource</name>
-      <description>Stores information about where an document (source of an item) was retrieved from in the HCS vLab REST API</description>
+      <description>Stores information about where an document (source of an item) was retrieved from in the Alveo REST API</description>
       <supertypeName>au.edu.alveo.uima.types.VLabRestInstance</supertypeName>
       <features>
         <featureDescription>
           <name>rawTextUrl</name>
-          <description>URL in the HCS vLab REST API which was used to retrieve the document's raw text</description>
+          <description>URL in the Alveo REST API which was used to retrieve the document's raw text</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
         <featureDescription>
           <name>docType</name>
-          <description>Type of the document on the HCS vLab server</description>
+          <description>Type of the document on the Alveo server</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
       </features>
@@ -117,7 +117,7 @@
         </featureDescription>
         <featureDescription>
           <name>label</name>
-          <description>The label assigned to the annotation in the HCS vLab data</description>
+          <description>The label assigned to the annotation in the Alveo data</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
       </features>

@@ -68,7 +68,7 @@ public class ItemListCollectionReader extends CasCollectionReader_ImplBase {
 	private String itemListId;
 
 	@ConfigurationParameter(name = PARAM_VLAB_BASE_URL, mandatory = true, 
-			description = "Base URL for the HCS vLab REST/JSON API server "
+			description = "Base URL for the Alveo REST/JSON API server "
 			+ "- eg http://vlab.example.org/ ; the URL for the item list "
 			+ " will be constructed by appending 'item_lists/{item_list_id}.json' to this URL")
 	private URL baseUrl;

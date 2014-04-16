@@ -22,7 +22,7 @@ import java.io.OutputStream;
 public class WriteDynamicDescriptors {
 	protected static class CLParams {
 
-		@Parameter(names = {"-u", "--server-url"}, required = true, description = "Base URL of HCS vLab server")
+		@Parameter(names = {"-u", "--server-url"}, required = true, description = "Base URL of Alveo server")
 		private String serverUrl;
 
 		@Parameter(names = {"-k", "--api-key"}, required = true,
@@ -39,7 +39,7 @@ public class WriteDynamicDescriptors {
 	}
 
 	private static String usage = String.format("Dynamically generate descriptors for " +
-			"the type system and collection reader for the provided HCS vLab server " +
+			"the type system and collection reader for the provided Alveo server " +
 			"and API key. Useful for non-uimaFIT-based pipelines. Note that the " +
 			"uimaFIT maven plugin is not able to help here because the type system " +
 			"(and therefore the collection reader descriptor) must be dynamically-generated " +

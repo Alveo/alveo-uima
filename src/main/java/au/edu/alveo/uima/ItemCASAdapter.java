@@ -26,7 +26,7 @@ import java.util.Map;
 
 /**
  * A class, primarily for internal usage, which does the work of converting
- * items (from the HCS vLab API) and their annotations into an appropriate CAS
+ * items (from the Alveo API) and their annotations into an appropriate CAS
  */
 class ItemCASAdapter {
 	private static final Logger LOG = LoggerFactory.getLogger(ItemCASAdapter.class);

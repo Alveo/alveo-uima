@@ -1,13 +1,13 @@
 # UIMA-vlab
 
-An interface to [HCS vLab][hvl] for the [Apache UIMA Framework][uima].
+An interface to [Alveo][alv] for the [Apache UIMA Framework][uima].
 
-[hvl]: http://hcsvlab.org.au/
+[alv]: http://alveo.edu.au/
 [uima]: http://uima.apache.org/
 
 ## Purpose
 
-This package provides a translation layer between the REST API of HCS vLab and the UIMA framework. For reading the documents and associated annotations from vLab, this is implemented as a UIMA [Collection Reader][uimacr] -- that is, a component which produces UIMA documents which are then available for subsequent processing, generally in a [Collection Processing Engine (CPE)][uimacpe].
+This package provides a translation layer between the REST API of Alveo and the UIMA framework. For reading the documents and associated annotations from vLab, this is implemented as a UIMA [Collection Reader][uimacr] -- that is, a component which produces UIMA documents which are then available for subsequent processing, generally in a [Collection Processing Engine (CPE)][uimacpe].
 
 [uimacr]: http://uima.apache.org/d/uimaj-2.4.2/tutorials_and_users_guides.html#ugr.tug.cpe.collection_reader.developing
 [uimacpe]: http://uima.apache.org/d/uimaj-2.4.2/tutorials_and_users_guides.html#ugr.tug.cpe
@@ -25,7 +25,7 @@ This is built using [UIMAfit][uimafit], a collection of tools to allow more flex
 
 [uimafit]: http://uima.apache.org/uimafit.html
 
-An example of usage of this class can be found in `src/main/java/com/nicta/uimavlab/examples/ItemListCollectionReaderExample.java`. This main class takes the following as arguments (run the class with no arguments for more detailed usage information):
+An example of usage of this class can be found in `src/main/java/au/edu/alveo/uima/examples/ItemListCollectionReaderExample.java`. This main class takes the following as arguments (run the class with no arguments for more detailed usage information):
 
   * a server URI
   * an API key

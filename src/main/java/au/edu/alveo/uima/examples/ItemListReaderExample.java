@@ -19,7 +19,7 @@ import java.io.OutputStream;
 public class ItemListReaderExample {
 	protected static class CLParams {
 
-		@Parameter(names = {"-u", "--server-url"}, required = true, description = "Base URL of HCS vLab server")
+		@Parameter(names = {"-u", "--server-url"}, required = true, description = "Base URL of Alveo server")
 		private String serverUrl;
 
 		@Parameter(names = {"-k", "--api-key"}, required = true,

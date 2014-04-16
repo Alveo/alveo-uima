@@ -54,7 +54,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 	public static final String DEFAULT_LABEL_FEATURE = "au.edu.alveo.uima.types.ItemAnnotation:label";
 
 	@ConfigurationParameter(name = PARAM_VLAB_BASE_URL, mandatory = true,
-			description = "Base URL for the HCS vLab REST/JSON API server "
+			description = "Base URL for the Alveo REST/JSON API server "
 					+ "- eg http://vlab.example.org/ ; the URL for the item list "
 					+ " will be constructed by appending 'item_lists/{item_list_id}.json' to this URL")
 	private URL baseUrl; // XXX: type could be URL ?
@@ -65,14 +65,14 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 
 	@ConfigurationParameter(name = PARAM_LABEL_FEATURE_NAMES, mandatory = false,
 			description = "Fully-qualified feature names on UIMA annotations, the values of which will be mapped to " +
-					"labels in HCS vLab (first match will be used); " +
+					"labels in Alveo (first match will be used); " +
 					"the default entry is 'au.edu.alveo.uima.types.ItemAnnotation:label' " +
 					"which you probably want to include if you set this parameter")
 	private String[] labelFeatureNames = new String[] { DEFAULT_LABEL_FEATURE };
 
 	@ConfigurationParameter(name = PARAM_ANNTYPE_FEATURE_NAMES, mandatory = false,
 			description = "Fully-qualified feature names on UIMA annotations, the values of which will be mapped to " +
-					"annotation type URIs in HCS vLab (using the first match after processing the list in order); " +
+					"annotation type URIs in Alveo (using the first match after processing the list in order); " +
 					"The default entry is 'au.edu.alveo.uima.types.ItemAnnotation:annType' " +
 					"which you almost certainly want to include if you set this parameter. If no match is found " +
 					"in this list a type URI is automatically created from the qualified type name")
