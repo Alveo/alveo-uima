@@ -3,7 +3,7 @@ package au.edu.alveo.uima;
 import au.edu.alveo.uima.conversions.UIMAToAlveoAnnConverter;
 import au.edu.alveo.uima.types.ItemMetadata;
 import au.edu.alveo.uima.types.VLabDocSource;
-import au.edu.alveo.uima.types.VLabItemSource;
+import au.edu.alveo.uima.types.AlveoItemSource;
 import au.edu.alveo.client.UnknownValueException;
 import au.edu.alveo.client.UnsupportedLDSchemaException;
 import au.edu.alveo.client.entity.Item;
@@ -85,7 +85,7 @@ class ItemCASAdapter {
 			cas.addFsToIndexes(afs);
 			fsForAnns.set(ctr++, afs);
 		}
-		vlabItemSrc.setFeatureValue(ts.getFeatureByFullName("au.edu.alveo.uima.types.VLabItemSource:annotations"),
+		vlabItemSrc.setFeatureValue(ts.getFeatureByFullName("au.edu.alveo.uima.types.AlveoItemSource:annotations"),
 				fsForAnns);
 		cas.addFsToIndexes(fsForAnns);
 	}
@@ -129,7 +129,7 @@ class ItemCASAdapter {
 
 	private void storeMainItem(Item item, CAS mainView) throws CASException {
 		mainView.setSofaDataString(item.primaryText(), "text/plain");
-		VLabItemSource vlis = new VLabItemSource(mainView.getJCas());
+		AlveoItemSource vlis = new AlveoItemSource(mainView.getJCas());
 		vlis.setSourceUri(item.getUri());
 		vlis.setServerBase(serverBaseUrl);
 		storeMetadata(item, vlis);
@@ -151,7 +151,7 @@ class ItemCASAdapter {
 		metadata.setDiscourseType(orig.get("http://www.language-archives.org/OLAC/1.1/discourse_type"));
 		metadata.setRecordingDate(orig.get("http://www.language-archives.org/OLAC/1.1/recordingdate"));
 		Feature metadataFeature = vlabItemSrc.getCAS().getTypeSystem().getFeatureByFullName(
-				"au.edu.alveo.uima.types.VLabItemSource:metadata");
+				"au.edu.alveo.uima.types.AlveoItemSource:metadata");
 		vlabItemSrc.setFeatureValue(metadataFeature, metadata);
 		vlabItemSrc.getCAS().setDocumentLanguage(orig.get("http://www.language-archives.org/OLAC/1.1/language").substring(0, 2));
 	}

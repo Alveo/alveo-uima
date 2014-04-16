@@ -47,7 +47,7 @@ import static org.apache.uima.fit.factory.ConfigurationParameterFactory.Configur
  * 
  */
 @TypeCapability(outputs = { 
-		"au.edu.alveo.uima.types.VLabItemSource",
+		"au.edu.alveo.uima.types.AlveoItemSource",
 		"au.edu.alveo.uima.types.VLabDocSource",
 		"au.edu.alveo.uima.types.UnknownItemAnnotation",
 		"au.edu.alveo.uima.types.GeneratedItemAnnotation",

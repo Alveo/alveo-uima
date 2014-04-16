@@ -6,7 +6,7 @@
   <vendor>au.edu.alveo</vendor>
   <types>
     <typeDescription>
-      <name>au.edu.alveo.uima.types.VLabRestInstance</name>
+      <name>au.edu.alveo.uima.types.AlveoRestInstance</name>
       <description>Stores information about what the REST data source was on an Alveo server</description>
       <supertypeName>uima.tcas.DocumentAnnotation</supertypeName>
       <features>
@@ -18,9 +18,9 @@
       </features>
     </typeDescription>
     <typeDescription>
-      <name>au.edu.alveo.uima.types.VLabItemSource</name>
+      <name>au.edu.alveo.uima.types.AlveoItemSource</name>
       <description>Stores information about where an item was retrieved from in the Alveo REST API</description>
-      <supertypeName>au.edu.alveo.uima.types.VLabRestInstance</supertypeName>
+      <supertypeName>au.edu.alveo.uima.types.AlveoRestInstance</supertypeName>
       <features>
         <featureDescription>
           <name>sourceUri</name>
@@ -49,7 +49,7 @@
     <typeDescription>
       <name>au.edu.alveo.uima.types.VLabDocSource</name>
       <description>Stores information about where an document (source of an item) was retrieved from in the Alveo REST API</description>
-      <supertypeName>au.edu.alveo.uima.types.VLabRestInstance</supertypeName>
+      <supertypeName>au.edu.alveo.uima.types.AlveoRestInstance</supertypeName>
       <features>
         <featureDescription>
           <name>rawTextUrl</name>

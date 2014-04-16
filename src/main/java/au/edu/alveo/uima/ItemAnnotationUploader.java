@@ -3,7 +3,7 @@ package au.edu.alveo.uima;
 import com.google.common.collect.Lists;
 import au.edu.alveo.uima.conversions.FallingBackUIMAAlveoConverter;
 import au.edu.alveo.uima.conversions.UIMAToAlveoAnnConverter;
-import au.edu.alveo.uima.types.VLabItemSource;
+import au.edu.alveo.uima.types.AlveoItemSource;
 import au.edu.alveo.client.RestClient;
 import au.edu.alveo.client.TextRestAnnotation;
 import au.edu.alveo.client.entity.EntityNotFoundException;
@@ -228,7 +228,7 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 	}
 
 	private Item getOriginalFromAPI(CAS providedCas) throws UnauthorizedAPIKeyException, CASException {
-		VLabItemSource vlis = JCasUtil.selectSingle(providedCas.getJCas(), VLabItemSource.class);
+		AlveoItemSource vlis = JCasUtil.selectSingle(providedCas.getJCas(), AlveoItemSource.class);
 		String itemUri = vlis.getSourceUri();
 		return apiClient.getItemByUri(itemUri);
 	}
