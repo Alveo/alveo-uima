@@ -3,7 +3,7 @@
   <name>VLabSourceTypes</name>
   <description>Type system to encode information about a vLab source document</description>
   <version>1.0</version>
-  <vendor>com.nicta</vendor>
+  <vendor>au.edu.alveo</vendor>
   <types>
     <typeDescription>
       <name>au.edu.alveo.uima.types.VLabRestInstance</name>

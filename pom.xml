@@ -2,9 +2,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.nicta</groupId>
-	<artifactId>uimavlab</artifactId>
-	<version>0.3-SNAPSHOT</version>
+	<groupId>au.edu.alveo</groupId>
+	<artifactId>alveo-uima</artifactId>
+	<version>0.4-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<organization>
@@ -106,7 +106,7 @@
 							<!-- REQUIRED -->
 							<typeSystemIncludes>
 								<!-- one or more ant-like file patterns identifying top level descriptors -->
-								<typeSystemInclude>src/main/resources/com/nicta/uimavlab/VLabSourceTypes.xml</typeSystemInclude>
+								<typeSystemInclude>src/main/resources/au/edu/alveo/uima/types/VLabSourceTypes.xml</typeSystemInclude>
 							</typeSystemIncludes>
 
 							<!-- OPTIONAL -->
