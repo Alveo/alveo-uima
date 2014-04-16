@@ -1,1 +1,1 @@
-classpath*:com/nicta/uimavlab/types/*.xml
+classpath*:au/edu/alveo/uima/types/*.xml
