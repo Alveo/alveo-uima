@@ -92,7 +92,8 @@ public class ItemAnnotationUploader extends CasConsumer_ImplBase {
 	@ConfigurationParameter(name = PARAM_ANNOTATION_CONVERTERS, mandatory = false,
 			description = "Classes for converting UIMA annotations into Alveo annotations in preference to" +
 					"the default strategy of looking for label or annotation type features with appropriate names " +
-					"or guessing the annotation type URI based on the source annotation type.")
+					"or guessing the annotation type URI based on the source annotation type. " +
+					"All classes named here must implement au.edu.alveo.uima.conversions.UIMAToAlveoAnnConverter")
 	private String[] annotationConverterClasses = new String[] {};
 
 	private RestClient apiClient;
